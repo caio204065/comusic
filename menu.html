@@ -37,6 +37,7 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+      background: black;
     }
 
     .grid {
@@ -57,21 +58,6 @@
     .album img { width: 100%; display: block; }
     .album h3 { font-size: 14px; margin: 10px 0; }
 
-    /* Tracklist */
-    .tracklist {
-      padding: 20px;
-    }
-    .track {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px;
-      border-bottom: 1px solid #222;
-      cursor: pointer;
-    }
-    .track:hover { background: #1c1c1c; }
-
-    /* Player customizado */
     footer {
       position: fixed;
       bottom: 0;
@@ -94,6 +80,21 @@
     .progress { flex: 2; display: flex; align-items: center; gap: 10px; }
     .progress input[type="range"] { width: 100%; cursor: pointer; }
     .cover { width: 50px; height: 50px; border-radius: 6px; object-fit: cover; }
+
+    /* botões do vídeo */
+    #fullscreenBtn, #toggleVideoBtn {
+      position: absolute;
+      bottom: 15px;
+      background: rgba(0,0,0,0.6);
+      border: none;
+      color: #fff;
+      font-size: 14px;
+      padding: 6px 12px;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+    #fullscreenBtn { right: 15px; font-size: 18px; }
+    #toggleVideoBtn { left: 15px; }
   </style>
 </head>
 <body>
@@ -108,22 +109,19 @@
   </header>
 
   <section class="highlight" id="highlight">
-    <video autoplay muted loop></video>
+    <video id="highlightVideo"></video>
+    <button id="toggleVideoBtn" style="display:none;">🎬 Ver Clipe</button>
+    <button id="fullscreenBtn">⛶</button>
   </section>
 
   <section class="grid" id="albumGrid"></section>
 
-  <!-- Tracklist dinâmica -->
-  <section class="tracklist" id="tracklist"></section>
-
   <footer>
     <img src="" alt="Capa" id="cover" class="cover" style="display:none;">
     <div class="controls">
-      <button onclick="toggleShuffle()" id="shuffleBtn">🔀</button>
       <button onclick="prevTrack()">⏮️</button>
       <button onclick="togglePlay()" id="playBtn">▶️</button>
       <button onclick="nextTrack()">⏭️</button>
-      <button onclick="toggleRepeat()" id="repeatBtn">🔁</button>
     </div>
     <div class="now-playing" id="nowPlaying">Nenhuma música tocando</div>
     <div class="progress">
@@ -137,23 +135,23 @@
   <script>
     const player = document.getElementById("player");
     const playBtn = document.getElementById("playBtn");
-    const shuffleBtn = document.getElementById("shuffleBtn");
-    const repeatBtn = document.getElementById("repeatBtn");
     const nowPlaying = document.getElementById("nowPlaying");
     const seekBar = document.getElementById("seekBar");
     const currentTimeEl = document.getElementById("currentTime");
     const durationEl = document.getElementById("duration");
     const cover = document.getElementById("cover");
     const highlight = document.getElementById("highlight");
+    const highlightVideo = document.getElementById("highlightVideo");
+    const fullscreenBtn = document.getElementById("fullscreenBtn");
+    const toggleVideoBtn = document.getElementById("toggleVideoBtn");
     const albumGrid = document.getElementById("albumGrid");
-    const tracklist = document.getElementById("tracklist");
 
     let currentPlaylist = [];
     let currentIndex = 0;
     let defaultClip = "";
     let albumCover = "";
-    let isShuffle = false;
-    let repeatMode = 0; // 0 = sem repetir, 1 = repetir música, 2 = repetir playlist
+    let currentMedia = null; // áudio ou vídeo
+    let forceAudioOnly = false;
 
     // Carregar JSON
     fetch("musicas.json")
@@ -166,70 +164,80 @@
             <img src="${album.capa}" alt="${album.titulo}">
             <h3>${album.titulo}</h3>
           `;
-          div.onclick = () => { loadAlbum(album); };
+          div.onclick = () => {
+            loadPlaylist(album.faixas, album.capa, album.clipe);
+          };
           albumGrid.appendChild(div);
 
           if (i === 0) {
-            highlight.querySelector("video").src = album.clipe;
+            highlightVideo.src = album.clipe;
           }
         });
       });
 
-    function loadAlbum(album) {
-      currentPlaylist = album.faixas;
+    function loadPlaylist(faixas, capa, clipe) {
+      currentPlaylist = faixas;
       currentIndex = 0;
-      defaultClip = album.clipe;
-      albumCover = album.capa;
-      highlight.querySelector("video").src = album.clipe;
-      cover.src = album.capa;
+      defaultClip = clipe;
+      albumCover = capa;
+      highlightVideo.src = clipe;
+      cover.src = capa;
       cover.style.display = "block";
-
-      // Tracklist
-      tracklist.innerHTML = "";
-      album.faixas.forEach((faixa, index) => {
-        const div = document.createElement("div");
-        div.classList.add("track");
-        div.innerHTML = `<span>${faixa.titulo} - ${faixa.artista}</span>`;
-        div.onclick = () => { currentIndex = index; playCurrent(); };
-        tracklist.appendChild(div);
-      });
-
       playCurrent();
     }
 
     function playCurrent() {
       if (currentPlaylist.length > 0) {
         const musica = currentPlaylist[currentIndex];
-        player.src = musica.audio;
+
+        if (musica.video && !forceAudioOnly) {
+          // tocar vídeo
+          highlightVideo.src = musica.video;
+          highlightVideo.style.display = "block";
+          highlightVideo.play();
+
+          player.pause();
+          player.src = "";
+          currentMedia = highlightVideo;
+
+          toggleVideoBtn.style.display = "block";
+          toggleVideoBtn.textContent = "🎵 Só Áudio";
+        } else {
+          // tocar áudio
+          player.src = musica.audio;
+          player.play();
+
+          highlightVideo.pause();
+          highlightVideo.src = defaultClip;
+          currentMedia = player;
+
+          toggleVideoBtn.style.display = musica.video ? "block" : "none";
+          toggleVideoBtn.textContent = "🎬 Ver Clipe";
+        }
+
         nowPlaying.textContent = `${musica.titulo} - ${musica.artista}`;
-        highlight.querySelector("video").src = musica.video || defaultClip;
         cover.src = albumCover;
-        player.play();
         playBtn.textContent = "⏸️";
       }
     }
 
     function togglePlay() {
-      if (player.paused) {
-        player.play();
-        playBtn.textContent = "⏸️";
-      } else {
-        player.pause();
-        playBtn.textContent = "▶️";
+      if (currentMedia) {
+        if (currentMedia.paused) {
+          currentMedia.play();
+          playBtn.textContent = "⏸️";
+        } else {
+          currentMedia.pause();
+          playBtn.textContent = "▶️";
+        }
       }
     }
 
     function nextTrack() {
-      if (isShuffle) {
-        currentIndex = Math.floor(Math.random() * currentPlaylist.length);
-      } else if (currentIndex < currentPlaylist.length - 1) {
+      if (currentIndex < currentPlaylist.length - 1) {
         currentIndex++;
-      } else if (repeatMode === 2) {
-        currentIndex = 0;
-      } else {
-        return;
+        playCurrent();
       }
-      playCurrent();
     }
 
     function prevTrack() {
@@ -239,53 +247,58 @@
       }
     }
 
-    function toggleShuffle() {
-      isShuffle = !isShuffle;
-      shuffleBtn.style.color = isShuffle ? "#1db954" : "#fff";
-    }
-
-    function toggleRepeat() {
-      repeatMode = (repeatMode + 1) % 3;
-      if (repeatMode === 0) {
-        repeatBtn.textContent = "🔁";
-        repeatBtn.style.color = "#fff";
-      } else if (repeatMode === 1) {
-        repeatBtn.textContent = "🔂"; // repetir uma música
-        repeatBtn.style.color = "#1db954";
-      } else if (repeatMode === 2) {
-        repeatBtn.textContent = "🔁";
-        repeatBtn.style.color = "#1db954";
-      }
-    }
-
-    player.addEventListener("ended", () => {
-      if (repeatMode === 1) {
-        playCurrent();
-      } else {
+    // Avançar automaticamente
+    function attachEnded(media) {
+      media.addEventListener("ended", () => {
         nextTrack();
-      }
-    });
+      });
+    }
+    attachEnded(player);
+    attachEnded(highlightVideo);
 
-    // Barra de progresso
-    player.addEventListener("timeupdate", () => {
-      if (player.duration) {
-        seekBar.value = (player.currentTime / player.duration) * 100;
-      }
+    // Atualizar tempo tanto no áudio quanto no vídeo
+    function attachTimeUpdate(media) {
+      media.addEventListener("timeupdate", () => {
+        if (media.duration) {
+          seekBar.value = (media.currentTime / media.duration) * 100;
+        }
 
-      let mins = Math.floor(player.currentTime / 60);
-      let secs = Math.floor(player.currentTime % 60).toString().padStart(2,"0");
-      currentTimeEl.textContent = `${mins}:${secs}`;
+        let mins = Math.floor(media.currentTime / 60);
+        let secs = Math.floor(media.currentTime % 60).toString().padStart(2,"0");
+        currentTimeEl.textContent = `${mins}:${secs}`;
 
-      if (!isNaN(player.duration)) {
-        let dmins = Math.floor(player.duration / 60);
-        let dsecs = Math.floor(player.duration % 60).toString().padStart(2,"0");
-        durationEl.textContent = `${dmins}:${dsecs}`;
-      }
-    });
+        if (!isNaN(media.duration)) {
+          let dmins = Math.floor(media.duration / 60);
+          let dsecs = Math.floor(media.duration % 60).toString().padStart(2,"0");
+          durationEl.textContent = `${dmins}:${dsecs}`;
+        }
+      });
+    }
+    attachTimeUpdate(player);
+    attachTimeUpdate(highlightVideo);
 
     seekBar.addEventListener("input", () => {
-      const seekTime = (seekBar.value / 100) * player.duration;
-      player.currentTime = seekTime;
+      if (currentMedia && currentMedia.duration) {
+        const seekTime = (seekBar.value / 100) * currentMedia.duration;
+        currentMedia.currentTime = seekTime;
+      }
+    });
+
+    // Botão fullscreen
+    fullscreenBtn.addEventListener("click", () => {
+      if (highlightVideo.requestFullscreen) {
+        highlightVideo.requestFullscreen();
+      } else if (highlightVideo.webkitRequestFullscreen) {
+        highlightVideo.webkitRequestFullscreen();
+      } else if (highlightVideo.msRequestFullscreen) {
+        highlightVideo.msRequestFullscreen();
+      }
+    });
+
+    // Botão alternar vídeo/áudio
+    toggleVideoBtn.addEventListener("click", () => {
+      forceAudioOnly = !forceAudioOnly;
+      playCurrent();
     });
   </script>
 
