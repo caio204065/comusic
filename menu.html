@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meu Apple Music Clone</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+      background: #111;
+      color: #fff;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      background: #000;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    header h1 { font-size: 20px; font-weight: 600; }
+    nav a { margin-left: 20px; color: #ccc; text-decoration: none; }
+    nav a:hover { color: #fff; }
+
+    .highlight {
+      position: relative;
+      height: 60vh;
+      background: #222;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .highlight video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+    .album {
+      background: #1c1c1c;
+      border-radius: 10px;
+      overflow: hidden;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .album:hover { transform: scale(1.05); }
+    .album img { width: 100%; display: block; }
+    .album h3 { font-size: 14px; margin: 10px 0; }
+
+    /* Tracklist */
+    .tracklist {
+      padding: 20px;
+    }
+    .track {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      border-bottom: 1px solid #222;
+      cursor: pointer;
+    }
+    .track:hover {
+      background: #1c1c1c;
+    }
+
+    /* Player customizado */
+    footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #000;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .controls { display: flex; align-items: center; gap: 15px; }
+    .controls button {
+      background: none; border: none; color: #fff;
+      font-size: 20px; cursor: pointer;
+    }
+    .controls button:hover { color: #1db954; }
+    .now-playing { flex: 1; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .progress { flex: 2; display: flex; align-items: center; gap: 10px; }
+    .progress input[type="range"] { width: 100%; cursor: pointer; }
+    .cover { width: 50px; height: 50px; border-radius: 6px; object-fit: cover; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🎵 MyMusic</h1>
+    <nav>
+      <a href="#">Início</a>
+      <a href="#">Playlists</a>
+      <a href="#">Artistas</a>
+    </nav>
+  </header>
+
+  <section class="highlight" id="highlight">
+    <video autoplay muted loop></video>
+  </section>
+
+  <section class="grid" id="albumGrid"></section>
+
+  <!-- Tracklist dinâmica -->
+  <section class="tracklist" id="tracklist"></section>
+
+  <footer>
+    <img src="" alt="Capa" id="cover" class="cover" style="display:none;">
+    <div class="controls">
+      <button onclick="prevTrack()">⏮️</button>
+      <button onclick="togglePlay()" id="playBtn">▶️</button>
+      <button onclick="nextTrack()">⏭️</button>
+    </div>
+    <div class="now-playing" id="nowPlaying">Nenhuma música tocando</div>
+    <div class="progress">
+      <span id="currentTime">0:00</span>
+      <input type="range" id="seekBar" value="0" min="0" max="100">
+      <span id="duration">0:00</span>
+    </div>
+    <audio id="player"></audio>
+  </footer>
+
+  <script>
+    const player = document.getElementById("player");
+    const playBtn = document.getElementById("playBtn");
+    const nowPlaying = document.getElementById("nowPlaying");
+    const seekBar = document.getElementById("seekBar");
+    const currentTimeEl = document.getElementById("currentTime");
+    const durationEl = document.getElementById("duration");
+    const cover = document.getElementById("cover");
+    const highlight = document.getElementById("highlight");
+    const albumGrid = document.getElementById("albumGrid");
+    const tracklist = document.getElementById("tracklist");
+
+    let currentPlaylist = [];
+    let currentIndex = 0;
+    let defaultClip = "";
+    let albumCover = "";
+
+    // Carregar JSON
+    fetch("musicas.json")
+      .then(res => res.json())
+      .then(data => {
+        data.albuns.forEach((album, i) => {
+          const div = document.createElement("div");
+          div.classList.add("album");
+          div.innerHTML = `
+            <img src="${album.capa}" alt="${album.titulo}">
+            <h3>${album.titulo}</h3>
+          `;
+          div.onclick = () => {
+            loadAlbum(album);
+          };
+          albumGrid.appendChild(div);
+
+          if (i === 0) {
+            highlight.querySelector("video").src = album.clipe;
+          }
+        });
+      });
+
+    function loadAlbum(album) {
+      currentPlaylist = album.faixas;
+      currentIndex = 0;
+      defaultClip = album.clipe;
+      albumCover = album.capa;
+      highlight.querySelector("video").src = album.clipe;
+      cover.src = album.capa;
+      cover.style.display = "block";
+
+      // Montar tracklist
+      tracklist.innerHTML = "";
+      album.faixas.forEach((faixa, index) => {
+        const div = document.createElement("div");
+        div.classList.add("track");
+        div.innerHTML = `
+          <span>${faixa.titulo} - ${faixa.artista}</span>
+        `;
+        div.onclick = () => {
+          currentIndex = index;
+          playCurrent();
+        };
+        tracklist.appendChild(div);
+      });
+
+      playCurrent();
+    }
+
+    function playCurrent() {
+      if (currentPlaylist.length > 0) {
+        const musica = currentPlaylist[currentIndex];
+        player.src = musica.audio;
+        nowPlaying.textContent = `${musica.titulo} - ${musica.artista}`;
+
+        // Se a faixa tiver clipe próprio, troca o vídeo do destaque
+        if (musica.video) {
+          highlight.querySelector("video").src = musica.video;
+        } else {
+          highlight.querySelector("video").src = defaultClip;
+        }
+
+        cover.src = albumCover;
+        player.play();
+        playBtn.textContent = "⏸️";
+      }
+    }
+
+    function togglePlay() {
+      if (player.paused) {
+        player.play();
+        playBtn.textContent = "⏸️";
+      } else {
+        player.pause();
+        playBtn.textContent = "▶️";
+      }
+    }
+
+    function nextTrack() {
+      if (currentIndex < currentPlaylist.length - 1) {
+        currentIndex++;
+        playCurrent();
+      }
+    }
+
+    function prevTrack() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        playCurrent();
+      }
+    }
+
+    player.addEventListener("ended", () => {
+      nextTrack();
+    });
+
+    // Barra de progresso
+    player.addEventListener("timeupdate", () => {
+      const progress = (player.currentTime / player.duration) * 100;
+      seekBar.value = progress || 0;
+
+      let mins = Math.floor(player.currentTime / 60);
+      let secs = Math.floor(player.currentTime % 60);
+      if (secs < 10) secs = "0" + secs;
+      currentTimeEl.textContent = `${mins}:${secs}`;
+
+      if (!isNaN(player.duration)) {
+        let dmins = Math.floor(player.duration / 60);
+        let dsecs = Math.floor(player.duration % 60);
+        if (dsecs < 10) dsecs = "0" + dsecs;
+        durationEl.textContent = `${dmins}:${dsecs}`;
+      }
+    });
+
+    seekBar.addEventListener("input", () => {
+      const seekTime = (seekBar.value / 100) * player.duration;
+      player.currentTime = seekTime;
+    });
+  </script>
+
+</body>
+</html>
