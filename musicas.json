@@ -38,12 +38,12 @@
     },
     {
       "titulo": "Gabriela",
-      "capa": “https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/IMG_2057.jpeg",
+      "capa": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/IMG_2057.jpeg",
       "clipe": "",
       "faixas": [
         {
-          "titulo": “Gabriela",
-          "artista": KATSEYE"",
+          "titulo": "Gabriela",
+          "artista": "KATSEYE",
           "audio": "",
           "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/0c18f7a5-a8ff-4c77-807c-1e23299f93bd.mp4"
         },
@@ -56,11 +56,11 @@
 },
 {
       "titulo": "JUMP",
-      "capa": “https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/IMG_2058.jpeg",
+      "capa": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/IMG_2058.jpeg",
       "clipe": "",
       "faixas": [
         {
-          "titulo": “JUMP",
+          "titulo": "JUMP",
           "artista": "BLACKPINK ",
           "audio": "",
           "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/577d90bc-b2a9-409f-ae83-fcf837fae44d.mp4"
@@ -71,7 +71,6 @@
           "audio": "SUA_CDN/audios/faixa2.mp3"
         }
       ]
-  ],
   "playlists": [
     {
       "nome": "Top Hits",
