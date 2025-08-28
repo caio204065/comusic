@@ -1,0 +1,38 @@
+{
+  "albuns": [
+    {
+      "titulo": "Álbum 1",
+      "capa": "SUA_CDN/capa1.jpg",
+      "clipe": "SUA_CDN/video1.mp4",
+      "faixas": [
+        {
+          "titulo": "Música 1",
+          "artista": "Artista A",
+          "audio": "SUA_CDN/musica1.mp3"
+        },
+        {
+          "titulo": "Música 2",
+          "artista": "Artista A",
+          "audio": "SUA_CDN/musica2.mp3"
+        }
+      ]
+    },
+    {
+      "titulo": "Álbum 2",
+      "capa": "SUA_CDN/capa2.jpg",
+      "clipe": "SUA_CDN/video2.mp4",
+      "faixas": [
+        {
+          "titulo": "Música 3",
+          "artista": "Artista B",
+          "audio": "SUA_CDN/musica3.mp3"
+        },
+        {
+          "titulo": "Música 4",
+          "artista": "Artista B",
+          "audio": "SUA_CDN/musica4.mp3"
+        }
+      ]
+    }
+  ]
+}
