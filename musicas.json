@@ -15,8 +15,10 @@
           "titulo": "Faixa 2",
           "artista": "Artista A",
           "audio": "SUA_CDN/audios/faixa2.mp3"
-        },
-        {
+        }
+      ]
+    },
+    {
       "titulo": "Loossemble",
       "capa": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/IMG_2050.jpeg",
       "clipe": "",
