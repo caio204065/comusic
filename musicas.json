@@ -6,33 +6,32 @@
       "clipe": "https://pub-a009e9ce77ba4588b1c701c9eac520fb.r2.dev/Lively/83e0f118-b35f-4f5b-9e1f-9eed1faa52b3.mp4",
       "faixas": [
         {
-          "titulo": "Música 1",
-          "artista": "Artista A",
-          "audio": "SUA_CDN/musica1.mp3"
+          "titulo": "MEXE",
+          "artista": "Pabllo Vittar Ft. Nmixx",
+          "audio": "SUA_CDN/audios/faixa1.mp3",
+          "video": "https://pub-a009e9ce77ba4588b1c701c9eac520fb.r2.dev/Lively/83e0f118-b35f-4f5b-9e1f-9eed1faa52b3.mp4"
         },
         {
-          "titulo": "Música 2",
+          "titulo": "Faixa 2",
           "artista": "Artista A",
-          "audio": "SUA_CDN/musica2.mp3"
-        }
-      ]
-    },
-    {
-      "titulo": "Álbum 2",
-      "capa": "SUA_CDN/capa2.jpg",
-      "clipe": "SUA_CDN/video2.mp4",
-      "faixas": [
-        {
-          "titulo": "Música 3",
-          "artista": "Artista B",
-          "audio": "SUA_CDN/musica3.mp3"
-        },
-        {
-          "titulo": "Música 4",
-          "artista": "Artista B",
-          "audio": "SUA_CDN/musica4.mp3"
+          "audio": "SUA_CDN/audios/faixa2.mp3"
         }
       ]
     }
-  ]
+  ],
+  "playlists": [
+    {
+      "nome": "Top Hits",
+      "capa": "SUA_CDN/playlist-top.jpg",
+      "faixas": [
+        {
+          "titulo": "Hit 1",
+          "artista": "Artista B",
+          "audio": "SUA_CDN/audios/hit1.mp3",
+          "video": "SUA_CDN/videos/hit1.mp4"
+        }
+      ]
+    }
+  ],
+  "placeholderArtista": "SUA_CDN/placeholder-artist.jpg"
 }
