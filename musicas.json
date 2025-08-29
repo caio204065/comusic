@@ -8,13 +8,15 @@
           "titulo": "MEXE",
           "artista": "Pabllo Vittar Ft. Nmixx",
           "audio": "SUA_CDN/audios/faixa1.mp3",
-          "video": "https://pub-a009e9ce77ba4588b1c701c9eac520fb.r2.dev/Lively/83e0f118-b35f-4f5b-9e1f-9eed1faa52b3.mp4"
+          "video": "https://pub-a009e9ce77ba4588b1c701c9eac520fb.r2.dev/Lively/83e0f118-b35f-4f5b-9e1f-9eed1faa52b3.mp4",
+          "imagemArtista": ""
         },
         {
           "titulo": "Faixa 2",
           "artista": "Artista A",
           "audio": "SUA_CDN/audios/faixa2.mp3",
-          "video": ""
+          "video": "",
+          "imagemArtista": ""
         }
       ]
     },
@@ -26,13 +28,15 @@
           "titulo": "TTYL",
           "artista": "Loossemble",
           "audio": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/Loossemble%2520%2528%25EB%25A3%25A8%25EC%2585%2588%25EB%25B8%2594%2529%2520-%2520%2527TTYL%2527%2520MV%2520%5BAdFtOCtmq-Q%5D.mp3",
-          "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/4c55da9d-cf57-43ea-8b93-45b94adcbc3a.mp4"
+          "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/4c55da9d-cf57-43ea-8b93-45b94adcbc3a.mp4",
+          "imagemArtista": ""
         },
         {
           "titulo": "Faixa 2",
           "artista": "Artista A",
           "audio": "SUA_CDN/audios/faixa2.mp3",
-          "video": ""
+          "video": "",
+          "imagemArtista": ""
         }
       ]
     },
@@ -44,13 +48,15 @@
           "titulo": "Gabriela",
           "artista": "KATSEYE",
           "audio": "",
-          "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/0c18f7a5-a8ff-4c77-807c-1e23299f93bd.mp4"
+          "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/0c18f7a5-a8ff-4c77-807c-1e23299f93bd.mp4",
+          "imagemArtista": ""
         },
         {
           "titulo": "Faixa 2",
           "artista": "Artista A",
           "audio": "SUA_CDN/audios/faixa2.mp3",
-          "video": ""
+          "video": "",
+          "imagemArtista": ""
         }
       ]
     },
@@ -62,13 +68,15 @@
           "titulo": "JUMP",
           "artista": "BLACKPINK",
           "audio": "",
-          "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/577d90bc-b2a9-409f-ae83-fcf837fae44d.mp4"
+          "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/577d90bc-b2a9-409f-ae83-fcf837fae44d.mp4",
+          "imagemArtista": ""
         },
         {
           "titulo": "Faixa 2",
           "artista": "Artista A",
           "audio": "SUA_CDN/audios/faixa2.mp3",
-          "video": ""
+          "video": "",
+          "imagemArtista": ""
         }
       ]
     },
@@ -80,25 +88,29 @@
           "titulo": "Golden",
           "artista": "HUNTRX, RUMI, EJAE",
           "audio": "",
-          "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/e2e0e953-bdce-4b9f-beb1-5b1109d6a54f.mp4"
+          "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/e2e0e953-bdce-4b9f-beb1-5b1109d6a54f.mp4",
+          "imagemArtista": ""
         },
         {
           "titulo": "Takedown",
           "artista": "TWICE",
           "audio": "",
-          "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/870cfdb4-8ea7-43de-b0ba-25016102a53f.mp4"
+          "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/870cfdb4-8ea7-43de-b0ba-25016102a53f.mp4",
+          "imagemArtista": ""
         },
         {
           "titulo": "How It’s Done",
           "artista": "HUNTRX",
           "audio": "",
-          "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/f52e3094-7c0c-4c1f-998a-6a01e7b4919a.mp4"
+          "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/f52e3094-7c0c-4c1f-998a-6a01e7b4919a.mp4",
+          "imagemArtista": ""
         },
         {
           "titulo": "Your Idol",
           "artista": "Saja Boys",
           "audio": "",
-          "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/fa5987aa-6203-4228-89d0-c7811a753bf2.mp4"
+          "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/fa5987aa-6203-4228-89d0-c7811a753bf2.mp4",
+          "imagemArtista": ""
         }
       ]
     },
@@ -110,11 +122,12 @@
           "titulo": "LOOP",
           "artista": "Yves",
           "audio": "",
-          "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/9b711140-a596-449a-ba61-c7b21fbeed22.mp4"
+          "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/9b711140-a596-449a-ba61-c7b21fbeed22.mp4",
+          "imagemArtista": ""
         }
       ]
-        },
-        {
+    },
+    {
       "titulo": "FAMOUS",
       "capa": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/IMG_2125fmallday.JPG",
       "faixas": [
@@ -122,16 +135,18 @@
           "titulo": "FAMOUS",
           "artista": "ALLDAY PROJECY",
           "audio": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/FAMOUS%20-%20ALLDAY%20PROJECT.mp3",
-          "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/FamousMV.MP4"
+          "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/FamousMV.MP4",
+          "imagemArtista": ""
         },
         {
-         "titulo": "WICKED",
-        "artista": "ALLDAY PROJECT",
-        "audio": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/WICKED%20-%20ALLDAY%20PROJECT.mp3",
-        "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/WickedMV.mp4"
-       }
-        ]
-},
+          "titulo": "WICKED",
+          "artista": "ALLDAY PROJECT",
+          "audio": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/WICKED%20-%20ALLDAY%20PROJECT.mp3",
+          "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/WickedMV.mp4",
+          "imagemArtista": ""
+        }
+      ]
+    },
     {
       "titulo": "FAST",
       "capa": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/Cover%20of%20Fast%20by%20Demi%20Lovato.jpg",
@@ -140,7 +155,8 @@
           "titulo": "Fast",
           "artista": "DEMI LOVATO",
           "audio": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/Fast%20-%20DEMI%20LOVATO.mp3",
-          "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/FastMVDEMILO.mp4"
+          "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/FastMVDEMILO.mp4",
+          "imagemArtista": ""
         }
       ]
     }
@@ -154,7 +170,8 @@
           "titulo": "Hit 1",
           "artista": "Artista B",
           "audio": "SUA_CDN/audios/hit1.mp3",
-          "video": "SUA_CDN/videos/hit1.mp4"
+          "video": "SUA_CDN/videos/hit1.mp4",
+          "imagemArtista": ""
         }
       ]
     }
