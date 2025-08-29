@@ -130,6 +130,18 @@
         "audio": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/WICKED%20-%20ALLDAY%20PROJECT.mp3",
         "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/WickedMV.mp4"
        }
+        ]
+},
+    {
+      "titulo": "FAST",
+      "capa": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/Cover%20of%20Fast%20by%20Demi%20Lovato.jpg",
+      "faixas": [
+        {
+          "titulo": "Fast",
+          "artista": "",
+          "audio": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/Fast%20-%20DEMI%20LOVATO.mp3",
+          "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/FastMVDEMILO.mp4"
+        }
       ]
     }
   ],
