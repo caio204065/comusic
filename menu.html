@@ -22,56 +22,102 @@
       font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
       background: var(--bg);
       color: var(--text);
-      padding-bottom: 90px;
+      padding-bottom: 90px; /* espaço p/ o player fixo */
     }
     header {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 16px 20px; background: var(--panel);
-      position: sticky; top: 0; z-index: 50; border-bottom: 1px solid #0a0a0a;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      background: var(--panel);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      border-bottom: 1px solid #0a0a0a;
     }
     header h1 { font-size: 18px; margin: 0; font-weight: 600; }
-    nav a { margin-left: 16px; color: #ccc; text-decoration: none; font-size: 14px; }
+    nav a {
+      margin-left: 16px;
+      color: #ccc;
+      text-decoration: none;
+      font-size: 14px;
+    }
     nav a:hover { color: #fff; }
 
     .content { max-width: 1200px; margin: 0 auto; }
 
+    /* player com borda arredondada apenas no container */
     .highlight {
-      position: relative; height: 56vh; background: #000;
-      display: flex; align-items: center; justify-content: center; overflow: hidden;
+      position: relative;
+      height: 56vh;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-radius: 20px;
     }
     .highlight video,
     .highlight img.artist-image {
-      width: 100%; height: 100%; object-fit: cover; border-radius: 20px;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 0;
     }
-    .highlight img.artist-image { display: none; }
+    .highlight img.artist-image {
+      display: none;
+    }
 
     #fullscreenBtn, #toggleVideoBtn {
-      position: absolute; bottom: 14px;
-      background: rgba(0,0,0,0.7); border: none; color: #fff;
-      font-size: 14px; padding: 6px 12px; cursor: pointer; border-radius: 6px; z-index: 5;
+      position: absolute;
+      bottom: 14px;
+      background: rgba(0,0,0,0.7);
+      border: none;
+      color: #fff;
+      font-size: 14px;
+      padding: 6px 12px;
+      cursor: pointer;
+      border-radius: 6px;
+      z-index: 5;
     }
     #fullscreenBtn { right: 14px; font-size: 18px; }
     #toggleVideoBtn { left: 14px; display: none; }
 
     .grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 16px; padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+      padding: 20px;
     }
-    .card { background: var(--card); border-radius: 12px; overflow: hidden; cursor: pointer; transition: transform .2s; }
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform .2s ease;
+    }
     .card:hover { transform: scale(1.04); }
     .card img { width: 100%; height: 180px; object-fit: cover; display: block; }
     .card h3 { font-size: 14px; margin: 8px 10px 12px; font-weight: 600; }
 
     .section-title {
-      padding: 0 20px; margin-top: 16px; margin-bottom: 8px;
-      font-size: 16px; color: #eaeaea; font-weight: 600;
+      padding: 0 20px;
+      margin-top: 16px;
+      margin-bottom: 8px;
+      font-size: 16px;
+      color: #eaeaea;
+      font-weight: 600;
     }
 
     .tracklist { padding: 10px 20px 120px; }
     .track {
-      display: grid; grid-template-columns: 40px 1fr 40px;
-      gap: 10px; align-items: center; padding: 10px 8px;
-      border-bottom: 1px solid var(--border); cursor: pointer;
+      display: grid;
+      grid-template-columns: 40px 1fr 40px;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
     }
     .track:hover { background: var(--panel-2); }
     .track.active { background: #2a2a2a; }
@@ -86,13 +132,21 @@
     .track button:hover { color: var(--accent); }
 
     footer {
-      position: fixed; left: 0; right: 0; bottom: 0; background: var(--panel);
-      padding: 10px 16px; display: grid; grid-template-columns: 50px minmax(120px,1fr) auto minmax(220px, 30vw);
-      gap: 12px; align-items: center; border-top: 1px solid #0a0a0a; z-index: 60;
+      position: fixed; left: 0; right: 0; bottom: 0;
+      background: var(--panel);
+      padding: 10px 16px;
+      display: grid;
+      grid-template-columns: 50px minmax(120px,1fr) auto minmax(220px, 30vw);
+      gap: 12px;
+      align-items: center;
+      border-top: 1px solid #0a0a0a;
+      z-index: 60;
     }
     .cover { width: 50px; height: 50px; border-radius: 6px; object-fit: cover; display: none; }
     .now-playing { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .controls { display: flex; align-items: center; gap: 10px; justify-self: center; }
+    .controls {
+      display: flex; align-items: center; gap: 10px; justify-self: center;
+    }
     .controls button {
       background: none; border: none; color: var(--text);
       font-size: 20px; cursor: pointer; padding: 4px 6px;
@@ -128,24 +182,28 @@
 
     <h2 class="section-title" id="sectionTitle">Álbuns</h2>
     <section class="grid" id="grid"></section>
+
     <section class="tracklist" id="tracklist" style="display:none;"></section>
   </div>
 
   <footer>
     <img id="cover" class="cover" alt="Capa">
     <div class="now-playing" id="nowPlaying">Nenhuma música tocando</div>
+
     <div class="controls">
-      <button id="shuffleBtn">🔀</button>
-      <button id="prevBtn">⏮️</button>
-      <button id="playBtn">▶️</button>
-      <button id="nextBtn">⏭️</button>
-      <button id="repeatBtn">🔁</button>
+      <button id="shuffleBtn" title="Aleatório">🔀</button>
+      <button id="prevBtn" title="Anterior">⏮️</button>
+      <button id="playBtn" title="Play/Pause">▶️</button>
+      <button id="nextBtn" title="Próxima">⏭️</button>
+      <button id="repeatBtn" title="Repetir">🔁</button>
     </div>
+
     <div class="progress">
       <span class="time" id="currentTime">0:00</span>
       <input type="range" id="seekBar" value="0" min="0" max="100"/>
       <span class="time" id="duration">0:00</span>
     </div>
+
     <audio id="audioPlayer"></audio>
   </footer>
 
@@ -156,9 +214,18 @@
     const gridEl = document.getElementById('grid');
     const tracklistEl = document.getElementById('tracklist');
     const sectionTitleEl = document.getElementById('sectionTitle');
+
     const coverEl = document.getElementById('cover');
     const nowPlayingEl = document.getElementById('nowPlaying');
     const playBtn = document.getElementById('playBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const shuffleBtn = document.getElementById('shuffleBtn');
+    const repeatBtn = document.getElementById('repeatBtn');
+    const seekBar = document.getElementById('seekBar');
+    const currentTimeEl = document.getElementById('currentTime');
+    const durationEl = document.getElementById('duration');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
     const toggleVideoBtn = document.getElementById('toggleVideoBtn');
 
     let musicData = null;
@@ -168,54 +235,138 @@
     let currentMedia = null;
     let forceAudioOnly = false;
 
+    const fmt = secs => {
+      if (!isFinite(secs)) return '0:00';
+      const m = Math.floor(secs / 60);
+      const s = Math.floor(secs % 60).toString().padStart(2,'0');
+      return `${m}:${s}`;
+    };
+
     fetch('musicas.json')
       .then(r => r.json())
-      .then(data => { musicData = data; loadHome(); })
-      .catch(() => { sectionTitleEl.textContent = 'Erro ao carregar músicas'; });
+      .then(data => {
+        musicData = data;
+        loadHome();
+      })
+      .catch(() => {
+        sectionTitleEl.textContent = 'Erro ao carregar músicas';
+      });
 
     function loadHome() {
       sectionTitleEl.textContent = 'Álbuns';
       gridEl.innerHTML = '';
       tracklistEl.style.display = 'none';
-      (musicData.albuns || []).forEach(album => {
+      if (!musicData || !musicData.albuns) return;
+
+      musicData.albuns.forEach((alb, ai) => {
         const card = document.createElement('div');
         card.className = 'card';
-        card.innerHTML = `<img src="${album.capa}"><h3>${album.titulo}</h3>`;
-        card.onclick = () => showAlbum(album);
+        card.innerHTML = `<img src="${alb.capa}" alt=""><h3>${alb.titulo}</h3>`;
+        card.onclick = () => showAlbum(ai);
         gridEl.appendChild(card);
       });
     }
 
-    function showAlbum(album) {
-      sectionTitleEl.textContent = album.titulo;
+    function showAlbum(albumIndex) {
+      const alb = musicData.albuns[albumIndex];
+      currentPlaylist = alb.faixas;
+      albumCover = alb.capa;
+      sectionTitleEl.textContent = alb.titulo;
       gridEl.innerHTML = '';
-      tracklistEl.innerHTML = '';
       tracklistEl.style.display = 'block';
-      currentPlaylist = album.faixas;
-      albumCover = album.capa;
+      tracklistEl.innerHTML = '';
 
-      album.faixas.forEach((faixa, i) => {
-        const div = document.createElement('div');
-        div.className = 'track';
-        div.innerHTML = `
+      alb.faixas.forEach((f, i) => {
+        const tr = document.createElement('div');
+        tr.className = 'track';
+        tr.innerHTML = `
           <div class="track-number">${i+1}</div>
           <div class="track-meta">
-            <div class="track-title">${faixa.titulo}</div>
-            <div class="track-artist">${faixa.artista}</div>
+            <div class="track-title">${f.titulo}</div>
+            <div class="track-artist">${f.artista}</div>
           </div>
-          <button>▶️</button>`;
-        div.onclick = () => { currentIndex = i; playCurrent(); };
-        tracklistEl.appendChild(div);
+          <button>▶️</button>
+        `;
+        tr.onclick = () => { currentIndex = i; playCurrent(true); };
+        tracklistEl.appendChild(tr);
+      });
+
+      currentIndex = 0;
+      playCurrent();
+    }
+
+    function showPlaylists() {
+      sectionTitleEl.textContent = 'Playlists';
+      gridEl.innerHTML = '';
+      tracklistEl.style.display = 'none';
+      if (!musicData || !musicData.playlists) return;
+
+      musicData.playlists.forEach((pl, pi) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `<img src="${pl.capa}" alt=""><h3>${pl.nome}</h3>`;
+        card.onclick = () => showPlaylist(pi);
+        gridEl.appendChild(card);
       });
     }
 
-    function playCurrent() {
+    function showPlaylist(playlistIndex) {
+      const pl = musicData.playlists[playlistIndex];
+      currentPlaylist = pl.faixas;
+      albumCover = pl.capa;
+      sectionTitleEl.textContent = pl.nome;
+      gridEl.innerHTML = '';
+      tracklistEl.style.display = 'block';
+      tracklistEl.innerHTML = '';
+
+      pl.faixas.forEach((f, i) => {
+        const tr = document.createElement('div');
+        tr.className = 'track';
+        tr.innerHTML = `
+          <div class="track-number">${i+1}</div>
+          <div class="track-meta">
+            <div class="track-title">${f.titulo}</div>
+            <div class="track-artist">${f.artista}</div>
+          </div>
+          <button>▶️</button>
+        `;
+        tr.onclick = () => { currentIndex = i; playCurrent(true); };
+        tracklistEl.appendChild(tr);
+      });
+
+      currentIndex = 0;
+      playCurrent();
+    }
+
+    function showArtists() {
+      sectionTitleEl.textContent = 'Artistas';
+      gridEl.innerHTML = '';
+      tracklistEl.style.display = 'none';
+      if (!musicData) return;
+
+      const artists = new Set();
+      musicData.albuns.forEach(alb => {
+        alb.faixas.forEach(f => artists.add(f.artista));
+      });
+
+      artists.forEach(art => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `<h3 style="padding:20px;text-align:center">${art}</h3>`;
+        gridEl.appendChild(card);
+      });
+    }
+
+    function playCurrent(fromUserGesture = false) {
       if (!currentPlaylist.length) return;
-      const faixa = currentPlaylist[currentIndex];
-      const useVideo = !!faixa.video && !forceAudioOnly;
+      const m = currentPlaylist[currentIndex];
+      const useVideo = !!m.video && !forceAudioOnly;
+
+      audioEl.volume = 1; audioEl.muted = false;
+      videoEl.volume = 1; videoEl.muted = false;
 
       if (useVideo) {
-        videoEl.src = faixa.video;
+        videoEl.src = m.video;
         videoEl.style.display = 'block';
         artistImageEl.style.display = 'none';
         audioEl.pause(); audioEl.src = '';
@@ -223,26 +374,26 @@
         toggleVideoBtn.style.display = 'block';
         toggleVideoBtn.textContent = '🎵 Só Áudio';
       } else {
-        audioEl.src = faixa.audio;
-        videoEl.pause(); videoEl.style.display = 'none';
-        artistImageEl.src = faixa.imagemArtista || albumCover || '';
+        audioEl.src = m.audio;
+        videoEl.pause();
+        videoEl.style.display = 'none';
+        artistImageEl.src = m.imagemArtista || albumCover || (musicData.placeholderArtista || '');
         artistImageEl.style.display = 'block';
         currentMedia = audioEl;
-        toggleVideoBtn.style.display = faixa.video ? 'block' : 'none';
+        toggleVideoBtn.style.display = m.video ? 'block' : 'none';
         toggleVideoBtn.textContent = '🎬 Ver Clipe';
       }
 
-      nowPlayingEl.textContent = `${faixa.titulo} — ${faixa.artista}`;
-      coverEl.src = albumCover;
-      coverEl.style.display = 'block';
+      nowPlayingEl.textContent = `${m.titulo} — ${m.artista}`;
+      coverEl.src = albumCover || coverEl.src;
+      coverEl.style.display = albumCover ? 'block' : 'none';
       playBtn.textContent = '⏸️';
-      currentMedia.play();
-    }
 
-    toggleVideoBtn.onclick = () => {
-      forceAudioOnly = !forceAudioOnly;
-      playCurrent();
-    };
+      const p = currentMedia.play();
+      if (p && typeof p.catch === 'function') {
+        p.catch(() => { playBtn.textContent = '▶️'; });
+      }
+    }
   </script>
 </body>
 </html>
