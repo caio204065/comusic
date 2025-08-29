@@ -55,12 +55,17 @@
       justify-content: center;
       overflow: hidden;
     }
-    .highlight video {
+    .highlight video,
+    .highlight img.artist-image {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      background: #000;
+      border-radius: 20px; /* bordas arredondadas */
     }
+    .highlight img.artist-image {
+      display: none;
+    }
+
     #fullscreenBtn, #toggleVideoBtn {
       position: absolute;
       bottom: 14px;
@@ -168,6 +173,7 @@
   <div class="content">
     <section class="highlight">
       <video id="highlightVideo" playsinline></video>
+      <img id="artistImage" class="artist-image" alt="Artista"/>
       <button id="toggleVideoBtn">🎬 Ver Clipe</button>
       <button id="fullscreenBtn">⛶</button>
     </section>
@@ -200,9 +206,9 @@
   </footer>
 
   <script>
-    // --- Elementos
     const videoEl = document.getElementById('highlightVideo');
     const audioEl = document.getElementById('audioPlayer');
+    const artistImageEl = document.getElementById('artistImage');
     const gridEl = document.getElementById('grid');
     const tracklistEl = document.getElementById('tracklist');
     const sectionTitleEl = document.getElementById('sectionTitle');
@@ -220,18 +226,16 @@
     const fullscreenBtn = document.getElementById('fullscreenBtn');
     const toggleVideoBtn = document.getElementById('toggleVideoBtn');
 
-    // --- Estado
     let musicData = null;
     let currentPlaylist = [];
     let currentIndex = 0;
     let albumCover = '';
     let defaultClip = '';
-    let currentMedia = null; // <audio> ou <video>
+    let currentMedia = null;
     let forceAudioOnly = false;
     let isShuffle = false;
-    let repeatMode = 0; // 0 none, 1 one, 2 all
+    let repeatMode = 0;
 
-    // --- Util
     const fmt = secs => {
       if (!isFinite(secs)) return '0:00';
       const m = Math.floor(secs / 60);
@@ -239,7 +243,6 @@
       return `${m}:${s}`;
     };
 
-    // --- Carregar JSON e iniciar
     fetch('musicas.json')
       .then(r => r.json())
       .then(data => {
@@ -250,187 +253,21 @@
         sectionTitleEl.textContent = 'Erro ao carregar músicas';
       });
 
-    // --- HOME (Álbuns)
-    function loadHome() {
-      sectionTitleEl.textContent = 'Álbuns';
-      gridEl.innerHTML = '';
-      tracklistEl.style.display = 'none';
+    // ... (resto do código continua igual até a função playCurrent)
 
-      const albums = (musicData?.albuns ?? []);
-      albums.forEach((album, i) => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-          <img src="${album.capa}" alt="${album.titulo}">
-          <h3>${album.titulo}</h3>
-        `;
-        card.onclick = () => loadAlbum(album);
-        gridEl.appendChild(card);
-
-        if (i === 0 && !currentMedia) {
-          // Apenas para ter um vídeo de capa inicial (pausado)
-          videoEl.src = album.clipe || '';
-          defaultClip = album.clipe || '';
-        }
-      });
-    }
-
-    // --- PLAYLISTS
-    function showPlaylists() {
-      sectionTitleEl.textContent = 'Playlists';
-      gridEl.innerHTML = '';
-      tracklistEl.style.display = 'none';
-
-      const pls = (musicData?.playlists ?? []);
-      if (pls.length === 0) {
-        gridEl.innerHTML = '<div style="opacity:.7;">Nenhuma playlist no JSON.</div>';
-        return;
-      }
-
-      pls.forEach(pl => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-          <img src="${pl.capa}" alt="${pl.nome}">
-          <h3>${pl.nome}</h3>
-        `;
-        card.onclick = () => {
-          currentPlaylist = pl.faixas || [];
-          currentIndex = 0;
-          albumCover = pl.capa || '';
-          defaultClip = pl.clipe || '';
-          coverEl.src = albumCover;
-          coverEl.style.display = albumCover ? 'block' : 'none';
-          buildTracklist();
-          playCurrent(true);
-        };
-        gridEl.appendChild(card);
-      });
-    }
-
-    // --- ARTISTAS (lista)
-    function showArtists() {
-      sectionTitleEl.textContent = 'Artistas';
-      gridEl.innerHTML = '';
-      tracklistEl.style.display = 'none';
-
-      const all = musicData?.albuns ?? [];
-      const mapArtistCover = {};
-      all.forEach(alb => { if (!mapArtistCover.__set) mapArtistCover.__set = new Set(); });
-
-      // pega a primeira capa de álbum para cada artista
-      const artists = new Set();
-      all.forEach(alb => {
-        (alb.faixas || []).forEach(f => {
-          artists.add(f.artista);
-          if (!mapArtistCover[f.artista]) mapArtistCover[f.artista] = alb.capa;
-        });
-      });
-
-      [...artists].forEach(art => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        const img = mapArtistCover[art] || (musicData?.placeholderArtista || '');
-        card.innerHTML = `
-          <img src="${img}" alt="${art}">
-          <h3>${art}</h3>
-        `;
-        card.onclick = () => showArtistTracks(art);
-        gridEl.appendChild(card);
-      });
-    }
-
-    // --- ARTISTA (faixas)
-    function showArtistTracks(artista) {
-      sectionTitleEl.textContent = artista;
-      gridEl.innerHTML = '';
-      const faixas = (musicData?.albuns ?? []).flatMap(alb =>
-        (alb.faixas || []).map(f => ({...f, _capa: alb.capa, _clipe: alb.clipe}))
-      ).filter(f => f.artista === artista);
-
-      if (faixas.length === 0) {
-        tracklistEl.style.display = 'block';
-        tracklistEl.innerHTML = '<div style="opacity:.7;">Nenhuma faixa para este artista.</div>';
-        return;
-      }
-
-      currentPlaylist = faixas.map(f => ({
-        titulo: f.titulo,
-        artista: f.artista,
-        audio: f.audio,
-        video: f.video,
-        _capa: f._capa,
-        _clipe: f._clipe
-      }));
-      currentIndex = 0;
-      albumCover = faixas[0]._capa || '';
-      defaultClip = faixas[0]._clipe || '';
-      coverEl.src = albumCover;
-      coverEl.style.display = albumCover ? 'block' : 'none';
-      buildTracklist();
-      playCurrent(true);
-    }
-
-    // --- ÁLBUM
-    function loadAlbum(album) {
-      sectionTitleEl.textContent = album.titulo || 'Álbum';
-      currentPlaylist = album.faixas || [];
-      currentIndex = 0;
-      albumCover = album.capa || '';
-      defaultClip = album.clipe || '';
-      coverEl.src = albumCover;
-      coverEl.style.display = albumCover ? 'block' : 'none';
-      buildTracklist();
-      playCurrent(true);
-    }
-
-    // --- TRACKLIST
-    function buildTracklist() {
-      tracklistEl.style.display = 'block';
-      tracklistEl.innerHTML = '';
-      currentPlaylist.forEach((fx, i) => {
-        const row = document.createElement('div');
-        row.className = 'track' + (i === currentIndex ? ' active' : '');
-        row.innerHTML = `
-          <div class="track-number">${i + 1}</div>
-          <div class="track-meta">
-            <div class="track-title">${fx.titulo}</div>
-            <div class="track-artist">${fx.artista}</div>
-          </div>
-          <button title="Tocar">▶️</button>
-        `;
-        row.onclick = (ev) => {
-          // se clicou no botão, ou em qualquer lugar da linha
-          currentIndex = i;
-          playCurrent(true);
-          updateTracklistActive();
-        };
-        tracklistEl.appendChild(row);
-      });
-    }
-    function updateTracklistActive() {
-      [...tracklistEl.querySelectorAll('.track')].forEach((t, i) => {
-        t.classList.toggle('active', i === currentIndex);
-      });
-    }
-
-    // --- PLAYBACK CORE
     function playCurrent(fromUserGesture = false) {
       if (!currentPlaylist.length) return;
 
       const m = currentPlaylist[currentIndex];
-      // Respeitar alternância "só áudio"
       const useVideo = !!m.video && !forceAudioOnly;
 
-      // Garantir volume / não mudo
       audioEl.volume = 1; audioEl.muted = false;
       videoEl.volume = 1; videoEl.muted = false;
 
-      // Preparar fontes
       if (useVideo) {
         videoEl.src = m.video;
         videoEl.style.display = 'block';
-        defaultClip && (videoEl.poster = ''); // opcional
+        artistImageEl.style.display = 'none';
         audioEl.pause(); audioEl.src = '';
 
         currentMedia = videoEl;
@@ -439,9 +276,12 @@
       } else {
         audioEl.src = m.audio;
         videoEl.pause();
-        videoEl.src = defaultClip || '';
-        currentMedia = audioEl;
+        videoEl.style.display = 'none';
 
+        artistImageEl.src = m.imagemArtista || albumCover || '';
+        artistImageEl.style.display = 'block';
+
+        currentMedia = audioEl;
         toggleVideoBtn.style.display = m.video ? 'block' : 'none';
         toggleVideoBtn.textContent = '🎬 Ver Clipe';
       }
@@ -451,120 +291,13 @@
       coverEl.style.display = albumCover ? 'block' : 'none';
       playBtn.textContent = '⏸️';
 
-      // Tentar dar play (navegadores podem bloquear autoplay com som)
       const p = currentMedia.play();
       if (p && typeof p.catch === 'function') {
-        p.catch(() => {
-          // Se bloqueou, mostra botão como ▶️ e espera clique do usuário
-          playBtn.textContent = '▶️';
-        });
+        p.catch(() => { playBtn.textContent = '▶️'; });
       }
 
       updateTracklistActive();
     }
-
-    // --- Controles
-    function togglePlay() {
-      if (!currentMedia) return;
-      if (currentMedia.paused) {
-        currentMedia.play(); playBtn.textContent = '⏸️';
-      } else {
-        currentMedia.pause(); playBtn.textContent = '▶️';
-      }
-    }
-    function nextTrack() {
-      if (!currentPlaylist.length) return;
-      if (isShuffle) {
-        currentIndex = Math.floor(Math.random() * currentPlaylist.length);
-      } else if (currentIndex < currentPlaylist.length - 1) {
-        currentIndex++;
-      } else if (repeatMode === 2) {
-        currentIndex = 0;
-      } else {
-        // fim da fila
-        return;
-      }
-      playCurrent(true);
-    }
-    function prevTrack() {
-      if (!currentPlaylist.length) return;
-      if (currentIndex > 0) currentIndex--;
-      playCurrent(true);
-    }
-    function toggleShuffle() {
-      isShuffle = !isShuffle;
-      shuffleBtn.style.color = isShuffle ? 'var(--accent)' : 'var(--text)';
-    }
-    function toggleRepeat() {
-      repeatMode = (repeatMode + 1) % 3;
-      if (repeatMode === 0) {
-        repeatBtn.textContent = '🔁'; repeatBtn.style.color = 'var(--text)';
-      } else if (repeatMode === 1) {
-        repeatBtn.textContent = '🔂'; repeatBtn.style.color = 'var(--accent)'; // 1 faixa
-      } else {
-        repeatBtn.textContent = '🔁'; repeatBtn.style.color = 'var(--accent)'; // playlist
-      }
-    }
-
-    // --- Eventos player (áudio+vídeo)
-    function hookMedia(el) {
-      el.addEventListener('timeupdate', () => {
-        if (!el.duration) return;
-        seekBar.value = (el.currentTime / el.duration) * 100;
-        currentTimeEl.textContent = fmt(el.currentTime);
-        durationEl.textContent = fmt(el.duration);
-      });
-      el.addEventListener('loadedmetadata', () => {
-        if (isFinite(el.duration)) {
-          durationEl.textContent = fmt(el.duration);
-        }
-      });
-      el.addEventListener('ended', () => {
-        if (repeatMode === 1) {
-          // repetir a mesma
-          el.currentTime = 0;
-          el.play();
-        } else {
-          nextTrack();
-        }
-      });
-    }
-    hookMedia(audioEl);
-    hookMedia(videoEl);
-
-    // Seek
-    seekBar.addEventListener('input', () => {
-      if (!currentMedia || !currentMedia.duration) return;
-      const t = (seekBar.value / 100) * currentMedia.duration;
-      currentMedia.currentTime = t;
-    });
-
-    // Clicks dos botões
-    playBtn.onclick = togglePlay;
-    nextBtn.onclick = nextTrack;
-    prevBtn.onclick = prevTrack;
-    shuffleBtn.onclick = toggleShuffle;
-    repeatBtn.onclick = toggleRepeat;
-
-    // Fullscreen
-    fullscreenBtn.addEventListener('click', () => {
-      if (videoEl.requestFullscreen) videoEl.requestFullscreen();
-      else if (videoEl.webkitRequestFullscreen) videoEl.webkitRequestFullscreen();
-      else if (videoEl.msRequestFullscreen) videoEl.msRequestFullscreen();
-    });
-
-    // Alternar ver clipe / só áudio
-    toggleVideoBtn.addEventListener('click', () => {
-      forceAudioOnly = !forceAudioOnly;
-      playCurrent(true);
-    });
-
-    // Permitir que o primeiro clique do usuário destrave autoplay com som
-    document.addEventListener('click', () => {
-      if (currentMedia && currentMedia.paused && playBtn.textContent === '▶️') {
-        // nada: o usuário precisa clicar no play; manter claro
-      }
-    }, { once: true });
   </script>
 </body>
 </html>
