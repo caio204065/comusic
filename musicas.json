@@ -3,7 +3,6 @@
     {
       "titulo": "MEXE",
       "capa": "https://pub-a009e9ce77ba4588b1c701c9eac520fb.r2.dev/Lively/IMG_2010.jpeg",
-      "clipe": "https://pub-a009e9ce77ba4588b1c701c9eac520fb.r2.dev/Lively/83e0f118-b35f-4f5b-9e1f-9eed1faa52b3.mp4",
       "faixas": [
         {
           "titulo": "MEXE",
@@ -21,7 +20,6 @@
     {
       "titulo": "TTYL",
       "capa": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/IMG_2050.jpeg",
-      "clipe": "",
       "faixas": [
         {
           "titulo": "TTYL",
@@ -39,7 +37,6 @@
     {
       "titulo": "Gabriela",
       "capa": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/IMG_2057.jpeg",
-      "clipe": "",
       "faixas": [
         {
           "titulo": "Gabriela",
@@ -57,7 +54,6 @@
     {
       "titulo": "JUMP",
       "capa": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/IMG_2058.jpeg",
-      "clipe": "",
       "faixas": [
         {
           "titulo": "JUMP",
@@ -69,6 +65,36 @@
           "titulo": "Faixa 2",
           "artista": "Artista A",
           "audio": "SUA_CDN/audios/faixa2.mp3"
+        }
+      ]
+    },
+    {
+      "titulo": "Kpop Demon Hunters: SoundTrack from the Netflix movie",
+      "capa": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/IMG_2071.jpeg",
+      "faixas": [
+        {
+          "titulo": "Golden",
+          "artista": "HUNTRX, RUMI, EJAE",
+          "audio": "",
+          "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/e2e0e953-bdce-4b9f-beb1-5b1109d6a54f.mp4"
+        },
+        {
+          "titulo": "Takedown",
+          "artista": "TWICE",
+          "audio": "",
+          "video": ""
+        },
+        {
+          "titulo": "How It’s Done",
+          "artista": "HUNTRX",
+          "audio": "",
+          "video": ""
+        },
+        {
+          "titulo": "Your Idol",
+          "artista": "Saja Boys",
+          "audio": "",
+          "video": ""
         }
       ]
     }
