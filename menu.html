@@ -22,7 +22,7 @@
       font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
       background: var(--bg);
       color: var(--text);
-      padding-bottom: 90px; /* espaço p/ o player fixo */
+      padding-bottom: 90px;
     }
     header {
       display: flex;
@@ -46,7 +46,6 @@
 
     .content { max-width: 1200px; margin: 0 auto; }
 
-    /* player com borda arredondada apenas no container */
     .highlight {
       position: relative;
       height: 56vh;
@@ -55,18 +54,16 @@
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      border-radius: 20px;
+      border-radius: 20px; /* moldura arredondada */
     }
     .highlight video,
     .highlight img.artist-image {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      border-radius: 0;
+      border-radius: 0; /* conteúdo não arredondado */
     }
-    .highlight img.artist-image {
-      display: none;
-    }
+    .highlight img.artist-image { display: none; }
 
     #fullscreenBtn, #toggleVideoBtn {
       position: absolute;
@@ -234,6 +231,8 @@
     let albumCover = '';
     let currentMedia = null;
     let forceAudioOnly = false;
+    let isShuffle = false;
+    let repeatMode = 0;
 
     const fmt = secs => {
       if (!isFinite(secs)) return '0:00';
@@ -253,107 +252,70 @@
       });
 
     function loadHome() {
-      sectionTitleEl.textContent = 'Álbuns';
-      gridEl.innerHTML = '';
-      tracklistEl.style.display = 'none';
-      if (!musicData || !musicData.albuns) return;
-
-      musicData.albuns.forEach((alb, ai) => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `<img src="${alb.capa}" alt=""><h3>${alb.titulo}</h3>`;
-        card.onclick = () => showAlbum(ai);
-        gridEl.appendChild(card);
+      sectionTitleEl.textContent = "Álbuns";
+      gridEl.innerHTML = "";
+      tracklistEl.style.display = "none";
+      musicData.albuns.forEach(album => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `<img src="${album.capa}"><h3>${album.titulo}</h3>`;
+        div.onclick = () => showAlbum(album);
+        gridEl.appendChild(div);
       });
     }
 
-    function showAlbum(albumIndex) {
-      const alb = musicData.albuns[albumIndex];
-      currentPlaylist = alb.faixas;
-      albumCover = alb.capa;
-      sectionTitleEl.textContent = alb.titulo;
-      gridEl.innerHTML = '';
-      tracklistEl.style.display = 'block';
-      tracklistEl.innerHTML = '';
-
-      alb.faixas.forEach((f, i) => {
-        const tr = document.createElement('div');
-        tr.className = 'track';
+    function showAlbum(album) {
+      sectionTitleEl.textContent = album.titulo;
+      tracklistEl.innerHTML = "";
+      tracklistEl.style.display = "block";
+      gridEl.innerHTML = "";
+      currentPlaylist = album.faixas;
+      albumCover = album.capa;
+      album.faixas.forEach((faixa, i) => {
+        const tr = document.createElement("div");
+        tr.className = "track";
         tr.innerHTML = `
           <div class="track-number">${i+1}</div>
           <div class="track-meta">
-            <div class="track-title">${f.titulo}</div>
-            <div class="track-artist">${f.artista}</div>
+            <div class="track-title">${faixa.titulo}</div>
+            <div class="track-artist">${faixa.artista}</div>
           </div>
-          <button>▶️</button>
-        `;
+          <button>▶️</button>`;
         tr.onclick = () => { currentIndex = i; playCurrent(true); };
         tracklistEl.appendChild(tr);
       });
-
-      currentIndex = 0;
-      playCurrent();
     }
 
     function showPlaylists() {
-      sectionTitleEl.textContent = 'Playlists';
-      gridEl.innerHTML = '';
-      tracklistEl.style.display = 'none';
-      if (!musicData || !musicData.playlists) return;
-
-      musicData.playlists.forEach((pl, pi) => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `<img src="${pl.capa}" alt=""><h3>${pl.nome}</h3>`;
-        card.onclick = () => showPlaylist(pi);
-        gridEl.appendChild(card);
+      sectionTitleEl.textContent = "Playlists";
+      gridEl.innerHTML = "";
+      tracklistEl.style.display = "none";
+      musicData.playlists.forEach(pl => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `<img src="${pl.capa}"><h3>${pl.nome}</h3>`;
+        div.onclick = () => showAlbum(pl);
+        gridEl.appendChild(div);
       });
-    }
-
-    function showPlaylist(playlistIndex) {
-      const pl = musicData.playlists[playlistIndex];
-      currentPlaylist = pl.faixas;
-      albumCover = pl.capa;
-      sectionTitleEl.textContent = pl.nome;
-      gridEl.innerHTML = '';
-      tracklistEl.style.display = 'block';
-      tracklistEl.innerHTML = '';
-
-      pl.faixas.forEach((f, i) => {
-        const tr = document.createElement('div');
-        tr.className = 'track';
-        tr.innerHTML = `
-          <div class="track-number">${i+1}</div>
-          <div class="track-meta">
-            <div class="track-title">${f.titulo}</div>
-            <div class="track-artist">${f.artista}</div>
-          </div>
-          <button>▶️</button>
-        `;
-        tr.onclick = () => { currentIndex = i; playCurrent(true); };
-        tracklistEl.appendChild(tr);
-      });
-
-      currentIndex = 0;
-      playCurrent();
     }
 
     function showArtists() {
-      sectionTitleEl.textContent = 'Artistas';
-      gridEl.innerHTML = '';
-      tracklistEl.style.display = 'none';
-      if (!musicData) return;
-
-      const artists = new Set();
-      musicData.albuns.forEach(alb => {
-        alb.faixas.forEach(f => artists.add(f.artista));
+      sectionTitleEl.textContent = "Artistas";
+      gridEl.innerHTML = "";
+      tracklistEl.style.display = "none";
+      let artistas = new Map();
+      musicData.albuns.forEach(a => a.faixas.forEach(f => artistas.set(f.artista, f.imagemArtista || a.capa)));
+      artistas.forEach((img, nome) => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `<img src="${img}"><h3>${nome}</h3>`;
+        gridEl.appendChild(div);
       });
+    }
 
-      artists.forEach(art => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `<h3 style="padding:20px;text-align:center">${art}</h3>`;
-        gridEl.appendChild(card);
+    function updateTracklistActive() {
+      [...tracklistEl.children].forEach((el,i) => {
+        el.classList.toggle("active", i === currentIndex);
       });
     }
 
@@ -362,22 +324,19 @@
       const m = currentPlaylist[currentIndex];
       const useVideo = !!m.video && !forceAudioOnly;
 
-      audioEl.volume = 1; audioEl.muted = false;
-      videoEl.volume = 1; videoEl.muted = false;
+      audioEl.volume = 1; videoEl.volume = 1;
 
       if (useVideo) {
-        videoEl.src = m.video;
-        videoEl.style.display = 'block';
-        artistImageEl.style.display = 'none';
+        videoEl.src = m.video || '';
+        videoEl.style.display = 'block'; artistImageEl.style.display = 'none';
         audioEl.pause(); audioEl.src = '';
         currentMedia = videoEl;
-        toggleVideoBtn.style.display = 'block';
+        toggleVideoBtn.style.display = m.video ? 'block' : 'none';
         toggleVideoBtn.textContent = '🎵 Só Áudio';
       } else {
-        audioEl.src = m.audio;
-        videoEl.pause();
-        videoEl.style.display = 'none';
-        artistImageEl.src = m.imagemArtista || albumCover || (musicData.placeholderArtista || '');
+        audioEl.src = m.audio || m.video || '';
+        videoEl.pause(); videoEl.style.display = 'none';
+        artistImageEl.src = m.imagemArtista || albumCover || (musicData?.placeholderArtista || '');
         artistImageEl.style.display = 'block';
         currentMedia = audioEl;
         toggleVideoBtn.style.display = m.video ? 'block' : 'none';
@@ -389,11 +348,56 @@
       coverEl.style.display = albumCover ? 'block' : 'none';
       playBtn.textContent = '⏸️';
 
-      const p = currentMedia.play();
-      if (p && typeof p.catch === 'function') {
-        p.catch(() => { playBtn.textContent = '▶️'; });
-      }
+      currentMedia.play().catch(() => { playBtn.textContent = '▶️'; });
+
+      currentMedia.onended = () => {
+        if (repeatMode === 1) {
+          playCurrent(true);
+        } else if (repeatMode === 2) {
+          currentIndex = (currentIndex + 1) % currentPlaylist.length;
+          playCurrent(true);
+        } else {
+          if (currentIndex < currentPlaylist.length - 1) {
+            currentIndex++;
+            playCurrent(true);
+          } else {
+            playBtn.textContent = '▶️';
+          }
+        }
+      };
+
+      updateTracklistActive();
     }
+
+    toggleVideoBtn.onclick = () => { forceAudioOnly = !forceAudioOnly; playCurrent(true); };
+
+    fullscreenBtn.onclick = () => {
+      const container = document.querySelector('.highlight');
+      if (document.fullscreenElement) document.exitFullscreen();
+      else if (container.requestFullscreen) container.requestFullscreen();
+    };
+
+    playBtn.onclick = () => {
+      if (!currentMedia) return;
+      if (currentMedia.paused) { currentMedia.play(); playBtn.textContent = '⏸️'; }
+      else { currentMedia.pause(); playBtn.textContent = '▶️'; }
+    };
+
+    prevBtn.onclick = () => { if (currentIndex > 0) { currentIndex--; playCurrent(true); } };
+    nextBtn.onclick = () => { if (currentIndex < currentPlaylist.length-1) { currentIndex++; playCurrent(true); } };
+
+    shuffleBtn.onclick = () => { isShuffle = !isShuffle; shuffleBtn.style.color = isShuffle ? 'var(--accent)' : 'var(--text)'; };
+    repeatBtn.onclick = () => { repeatMode = (repeatMode+1)%3; repeatBtn.style.color = repeatMode ? 'var(--accent)' : 'var(--text)'; };
+
+    setInterval(() => {
+      if (!currentMedia || currentMedia.readyState < 1) return;
+      seekBar.max = currentMedia.duration;
+      seekBar.value = currentMedia.currentTime;
+      currentTimeEl.textContent = fmt(currentMedia.currentTime);
+      durationEl.textContent = fmt(currentMedia.duration);
+    }, 500);
+
+    seekBar.oninput = () => { if (currentMedia) currentMedia.currentTime = seekBar.value; };
   </script>
 </body>
 </html>
