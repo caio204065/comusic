@@ -64,6 +64,7 @@
     }
     .highlight img.artist-image {
       display: none;
+      aspect-ratio: 2436 / 1125;
     }
 
     #fullscreenBtn, #toggleVideoBtn {
@@ -253,13 +254,21 @@
         sectionTitleEl.textContent = 'Erro ao carregar músicas';
       });
 
-    // ... (resto do código continua igual até a função playCurrent)
+    function getArtistImageSrc(m) {
+      return (m.imagemArtista && m.imagemArtista.trim())
+          || (musicData?.placeholderArtista)
+          || albumCover
+          || '';
+    }
 
     function playCurrent(fromUserGesture = false) {
       if (!currentPlaylist.length) return;
 
       const m = currentPlaylist[currentIndex];
-      const useVideo = !!m.video && !forceAudioOnly;
+      const hasVideo = !!m.video;
+      const hasAudio = !!m.audio;
+
+      const useVideo = hasVideo && !(forceAudioOnly && hasAudio);
 
       audioEl.volume = 1; audioEl.muted = false;
       videoEl.volume = 1; videoEl.muted = false;
@@ -271,19 +280,31 @@
         audioEl.pause(); audioEl.src = '';
 
         currentMedia = videoEl;
-        toggleVideoBtn.style.display = 'block';
+        toggleVideoBtn.style.display = hasAudio || hasVideo ? 'block' : 'none';
         toggleVideoBtn.textContent = '🎵 Só Áudio';
+        forceAudioOnly = false;
       } else {
+        if (!hasAudio) {
+          if (hasVideo) {
+            forceAudioOnly = false;
+            return playCurrent(fromUserGesture);
+          }
+          return;
+        }
+
         audioEl.src = m.audio;
         videoEl.pause();
         videoEl.style.display = 'none';
 
-        artistImageEl.src = m.imagemArtista || albumCover || '';
+        const imgSrc = getArtistImageSrc(m);
+        artistImageEl.src = imgSrc;
+        artistImageEl.setAttribute('width', '2436');
+        artistImageEl.setAttribute('height', '1125');
         artistImageEl.style.display = 'block';
 
         currentMedia = audioEl;
-        toggleVideoBtn.style.display = m.video ? 'block' : 'none';
-        toggleVideoBtn.textContent = '🎬 Ver Clipe';
+        toggleVideoBtn.style.display = hasVideo || hasAudio ? 'block' : 'none';
+        toggleVideoBtn.textContent = hasVideo ? '🎬 Ver Clipe' : '🎵 Só Áudio';
       }
 
       nowPlayingEl.textContent = `${m.titulo} — ${m.artista}`;
@@ -296,8 +317,13 @@
         p.catch(() => { playBtn.textContent = '▶️'; });
       }
 
-      updateTracklistActive();
+      updateTracklistActive && updateTracklistActive();
     }
+
+    toggleVideoBtn.addEventListener('click', () => {
+      forceAudioOnly = !forceAudioOnly;
+      playCurrent(true);
+    });
   </script>
 </body>
 </html>
