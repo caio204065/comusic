@@ -13,7 +13,8 @@
         {
           "titulo": "Faixa 2",
           "artista": "Artista A",
-          "audio": "SUA_CDN/audios/faixa2.mp3"
+          "audio": "SUA_CDN/audios/faixa2.mp3",
+          "video": ""
         }
       ]
     },
@@ -30,7 +31,8 @@
         {
           "titulo": "Faixa 2",
           "artista": "Artista A",
-          "audio": "SUA_CDN/audios/faixa2.mp3"
+          "audio": "SUA_CDN/audios/faixa2.mp3",
+          "video": ""
         }
       ]
     },
@@ -47,7 +49,8 @@
         {
           "titulo": "Faixa 2",
           "artista": "Artista A",
-          "audio": "SUA_CDN/audios/faixa2.mp3"
+          "audio": "SUA_CDN/audios/faixa2.mp3",
+          "video": ""
         }
       ]
     },
@@ -64,7 +67,8 @@
         {
           "titulo": "Faixa 2",
           "artista": "Artista A",
-          "audio": "SUA_CDN/audios/faixa2.mp3"
+          "audio": "SUA_CDN/audios/faixa2.mp3",
+          "video": ""
         }
       ]
     },
@@ -95,10 +99,10 @@
           "artista": "Saja Boys",
           "audio": "",
           "video": ""
-            }
+        }
       ]
-        },
-        {
+    },
+    {
       "titulo": "LOOP",
       "capa": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/IMG_2082.jpeg",
       "faixas": [
