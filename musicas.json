@@ -95,6 +95,16 @@
           "artista": "Saja Boys",
           "audio": "",
           "video": ""
+        },
+        {
+      "titulo": "LOOP",
+      "capa": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/IMG_2082.jpeg",
+      "faixas": [
+        {
+          "titulo": "LOOP",
+          "artista": "Yves",
+          "audio": "",
+          "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/9b711140-a596-449a-ba61-c7b21fbeed22.mp4"
         }
       ]
     }
