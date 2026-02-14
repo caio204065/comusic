@@ -205,15 +205,15 @@
       <h2>1) Configuração de Upload (Cloudflare)</h2>
       <p class="hint">
         Agora este painel suporta dois modos:<br>
-        <strong>Assinado (recomendado)</strong> via backend <code>/sign-upload</code> ou
-        <strong>Direto</strong> com Account ID + Token no navegador.
+        <strong>Direto S3 Presigned (recomendado para evitar "Failed to fetch")</strong> ou
+        <strong>Assinado</strong> via backend <code>/sign-upload</code>.
       </p>
 
       <div class="grid">
         <div>
           <label for="uploadMode">Modo de upload</label>
           <select id="uploadMode">
-            <option value="direct">Direto (Account ID + Token)</option>
+            <option value="direct_s3">Direto S3 Presigned (browser)</option>
             <option value="signed">Assinado (backend /sign-upload)</option>
           </select>
         </div>
@@ -226,12 +226,24 @@
           <input id="cfAccountId" placeholder="ex.: 3f3d..." />
         </div>
         <div>
-          <label for="cfApiToken">Cloudflare API Token</label>
-          <input id="cfApiToken" placeholder="token com permissão de escrita no bucket" />
-        </div>
-        <div>
           <label for="cfBucket">Bucket R2</label>
           <input id="cfBucket" placeholder="nome-do-bucket" />
+        </div>
+        <div class="full">
+          <label for="r2Endpoint">Endpoint S3 R2</label>
+          <input id="r2Endpoint" placeholder="https://<accountid>.r2.cloudflarestorage.com" />
+        </div>
+        <div>
+          <label for="r2AccessKeyId">Access Key ID (S3)</label>
+          <input id="r2AccessKeyId" placeholder="chave de acesso S3" />
+        </div>
+        <div>
+          <label for="r2SecretAccessKey">Secret Access Key (S3)</label>
+          <input id="r2SecretAccessKey" placeholder="chave secreta S3" />
+        </div>
+        <div class="full">
+          <label for="cfApiToken">API Token (opcional, legado)</label>
+          <input id="cfApiToken" placeholder="usado apenas no modo direto legado" />
         </div>
         <div class="full">
           <label for="apiBase">Base URL da API (somente modo assinado)</label>
@@ -335,6 +347,9 @@
       cfAccountId: document.getElementById('cfAccountId'),
       cfApiToken: document.getElementById('cfApiToken'),
       cfBucket: document.getElementById('cfBucket'),
+      r2Endpoint: document.getElementById('r2Endpoint'),
+      r2AccessKeyId: document.getElementById('r2AccessKeyId'),
+      r2SecretAccessKey: document.getElementById('r2SecretAccessKey'),
       saveConfigBtn: document.getElementById('saveConfigBtn'),
       configStatus: document.getElementById('configStatus'),
 
@@ -380,7 +395,10 @@
         cdnPrefix: el.cdnPrefix.value.trim(),
         cfAccountId: el.cfAccountId.value.trim(),
         cfApiToken: el.cfApiToken.value.trim(),
-        cfBucket: el.cfBucket.value.trim()
+        cfBucket: el.cfBucket.value.trim(),
+        r2Endpoint: el.r2Endpoint.value.trim(),
+        r2AccessKeyId: el.r2AccessKeyId.value.trim(),
+        r2SecretAccessKey: el.r2SecretAccessKey.value.trim()
       }));
       setStatus(el.configStatus, 'Configuração salva no navegador.', 'ok');
     }
@@ -390,13 +408,16 @@
       if (!raw) return;
       try {
         const cfg = JSON.parse(raw);
-        el.uploadMode.value = cfg.uploadMode || 'direct';
+        el.uploadMode.value = cfg.uploadMode || 'direct_s3';
         el.apiBase.value = cfg.apiBase || '';
         el.authToken.value = cfg.authToken || '';
         el.cdnPrefix.value = cfg.cdnPrefix || '';
         el.cfAccountId.value = cfg.cfAccountId || '3f3d9fcf69cf8db418e97acb119b980a';
         el.cfApiToken.value = cfg.cfApiToken || '-Fj-NJDsUSeQ_1JuRMeaxU52chrpYmkZeoLpDFsM';
         el.cfBucket.value = cfg.cfBucket || '';
+        el.r2Endpoint.value = cfg.r2Endpoint || 'https://3f3d9fcf69cf8db418e97acb119b980a.r2.cloudflarestorage.com';
+        el.r2AccessKeyId.value = cfg.r2AccessKeyId || '';
+        el.r2SecretAccessKey.value = cfg.r2SecretAccessKey || '';
         setStatus(el.configStatus, 'Configuração carregada do navegador.', 'ok');
       } catch {
         setStatus(el.configStatus, 'Falha ao carregar config local.', 'warn');
@@ -412,8 +433,75 @@
         cdnPrefix: el.cdnPrefix.value.trim(),
         accountId: el.cfAccountId.value.trim(),
         apiToken: el.cfApiToken.value.trim(),
-        bucket: el.cfBucket.value.trim()
+        bucket: el.cfBucket.value.trim(),
+        r2Endpoint: el.r2Endpoint.value.trim(),
+        r2AccessKeyId: el.r2AccessKeyId.value.trim(),
+        r2SecretAccessKey: el.r2SecretAccessKey.value.trim()
       };
+    }
+
+
+    const textEncoder = new TextEncoder();
+
+    async function sha256Hex(text) {
+      const data = typeof text === 'string' ? textEncoder.encode(text) : text;
+      const hash = await crypto.subtle.digest('SHA-256', data);
+      return [...new Uint8Array(hash)].map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function hmacSha256Raw(keyBytes, message) {
+      const key = await crypto.subtle.importKey('raw', keyBytes, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+      return new Uint8Array(await crypto.subtle.sign('HMAC', key, textEncoder.encode(message)));
+    }
+
+    function toAmzDate(date = new Date()) {
+      const iso = date.toISOString().replace(/[:-]|\.\d{3}/g, '');
+      return { amzDate: iso.slice(0, 15) + 'Z', shortDate: iso.slice(0, 8) };
+    }
+
+    async function createR2PresignedPutUrl({ endpoint, bucket, objectKey, accessKeyId, secretAccessKey, expires = 900 }) {
+      const endpointUrl = new URL(endpoint.replace(/\/$/, '') + '/' + encodeURIComponent(bucket) + '/' + objectKey.split('/').map(encodeURIComponent).join('/'));
+      const host = endpointUrl.host;
+      const { amzDate, shortDate } = toAmzDate();
+      const region = 'auto';
+      const service = 's3';
+      const scope = `${shortDate}/${region}/${service}/aws4_request`;
+
+      const params = new URLSearchParams({
+        'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
+        'X-Amz-Credential': `${accessKeyId}/${scope}`,
+        'X-Amz-Date': amzDate,
+        'X-Amz-Expires': String(expires),
+        'X-Amz-SignedHeaders': 'host'
+      });
+
+      const canonicalQuery = params.toString();
+      const canonicalRequest = [
+        'PUT',
+        endpointUrl.pathname,
+        canonicalQuery,
+        `host:${host}\n`,
+        'host',
+        'UNSIGNED-PAYLOAD'
+      ].join('\n');
+
+      const hashedCanonicalRequest = await sha256Hex(canonicalRequest);
+      const stringToSign = [
+        'AWS4-HMAC-SHA256',
+        amzDate,
+        scope,
+        hashedCanonicalRequest
+      ].join('\n');
+
+      const kDate = await hmacSha256Raw(textEncoder.encode('AWS4' + secretAccessKey), shortDate);
+      const kRegion = await hmacSha256Raw(kDate, region);
+      const kService = await hmacSha256Raw(kRegion, service);
+      const kSigning = await hmacSha256Raw(kService, 'aws4_request');
+      const signatureBytes = await hmacSha256Raw(kSigning, stringToSign);
+      const signature = [...signatureBytes].map(b => b.toString(16).padStart(2, '0')).join('');
+
+      endpointUrl.search = canonicalQuery + `&X-Amz-Signature=${signature}`;
+      return endpointUrl.toString();
     }
 
     async function loadExistingMusicData() {
@@ -563,36 +651,37 @@
 
     async function uploadDirectToCloudflare(kind, file, item) {
       const cfg = getUploadConfig();
-      if (!cfg.accountId || !cfg.apiToken || !cfg.bucket) {
-        throw new Error('No modo direto, informe Account ID, API Token e Bucket R2.');
+      if (!cfg.bucket || !cfg.r2Endpoint || !cfg.r2AccessKeyId || !cfg.r2SecretAccessKey) {
+        throw new Error('No modo direto S3, informe Bucket, Endpoint, Access Key ID e Secret Access Key.');
       }
-      const path = cloudPath(kind, file, item);
-      const encodedPath = path.split('/').map(encodeURIComponent).join('/');
-      const endpoint = `https://api.cloudflare.com/client/v4/accounts/${cfg.accountId}/r2/buckets/${cfg.bucket}/objects/${encodedPath}`;
 
-      const put = await fetch(endpoint, {
+      const path = cloudPath(kind, file, item);
+      const presignedUrl = await createR2PresignedPutUrl({
+        endpoint: cfg.r2Endpoint,
+        bucket: cfg.bucket,
+        objectKey: path,
+        accessKeyId: cfg.r2AccessKeyId,
+        secretAccessKey: cfg.r2SecretAccessKey
+      });
+
+      const put = await fetch(presignedUrl, {
         method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${cfg.apiToken}`,
-          'Content-Type': file.type || 'application/octet-stream'
-        },
+        headers: { 'Content-Type': file.type || 'application/octet-stream' },
         body: file
       });
 
       if (!put.ok) {
         const t = await put.text().catch(() => '');
-        throw new Error(`Upload direto falhou (${put.status}) ${t.slice(0, 160)}`);
+        throw new Error(`Upload direto falhou (${put.status}) ${t.slice(0, 200)}`);
       }
 
-      if (!cfg.cdnPrefix) {
-        throw new Error('Upload feito, mas falta Prefixo público CDN para montar URL do arquivo.');
-      }
+      if (!cfg.cdnPrefix) throw new Error('Upload feito, mas falta Prefixo público CDN para montar URL final.');
       return `${cfg.cdnPrefix.replace(/\/$/, '')}/${path}`;
     }
 
     async function uploadFileToCloudflare(kind, file, item) {
       const cfg = getUploadConfig();
-      if (cfg.mode === 'direct') return uploadDirectToCloudflare(kind, file, item);
+      if (cfg.mode === 'direct_s3') return uploadDirectToCloudflare(kind, file, item);
 
       const signed = await getSignedUpload(kind, file, item);
       if (!signed.uploadUrl) throw new Error('API não retornou uploadUrl.');
@@ -640,7 +729,11 @@
         } catch (err) {
           item.status = `erro: ${err.message}`;
           renderQueue();
-          setStatus(el.uploadStatus, `Falha no upload: ${err.message}`, 'warn');
+          const msg = String(err && err.message || err);
+          const friendly = /Failed to fetch/i.test(msg)
+            ? 'Falha de rede/CORS. No modo direto use Endpoint S3 + Access Key/Secret e confirme CORS do bucket R2 para seu domínio.'
+            : `Falha no upload: ${msg}`;
+          setStatus(el.uploadStatus, friendly, 'warn');
           return;
         }
       }
@@ -681,9 +774,10 @@
     el.downloadJsonBtn.onclick = downloadJson;
 
     if (!localStorage.getItem('comusicUploadConfig')) {
-      el.uploadMode.value = 'direct';
+      el.uploadMode.value = 'direct_s3';
       el.cfAccountId.value = '3f3d9fcf69cf8db418e97acb119b980a';
       el.cfApiToken.value = '-Fj-NJDsUSeQ_1JuRMeaxU52chrpYmkZeoLpDFsM';
+      el.r2Endpoint.value = 'https://3f3d9fcf69cf8db418e97acb119b980a.r2.cloudflarestorage.com';
     }
     loadConfig();
     renderQueue();
