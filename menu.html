@@ -558,7 +558,6 @@
     let isShuffle = false;
     let repeatMode = 0;
     let isCoverStageOpen = false;
-    let playCounts = JSON.parse(localStorage.getItem('comusic_play_counts') || '{}');
 
     const ICONS = {
       play: `<svg class="icon icon--solid" viewBox="0 0 24 24"><path d="M9 6.75c0-.8.87-1.29 1.55-.88l7.5 4.5a1.03 1.03 0 0 1 0 1.76l-7.5 4.5A1.03 1.03 0 0 1 9 15.75z"/></svg>`,
@@ -637,106 +636,6 @@
     }
 
     loadMusicData();
-
-
-    function trackKey(track) {
-      return `${(track?.titulo || '').trim()}::${(track?.artista || '').trim()}`;
-    }
-
-    function savePlayCounts() {
-      localStorage.setItem('comusic_play_counts', JSON.stringify(playCounts));
-    }
-
-    function countPlay(track) {
-      const key = trackKey(track);
-      if (!key || key === '::') return;
-      playCounts[key] = (playCounts[key] || 0) + 1;
-      savePlayCounts();
-    }
-
-    function getAllTracksCatalog() {
-      if (!musicData) return [];
-      const out = [];
-      (musicData.albuns || []).forEach(album => {
-        (album.faixas || []).forEach(f => out.push({ ...f, _cover: album.capa || '', _source: album.titulo || '' }));
-      });
-      (musicData.playlists || []).forEach(pl => {
-        (pl.faixas || []).forEach(f => out.push({ ...f, _cover: pl.capa || '', _source: pl.nome || '' }));
-      });
-      return out;
-    }
-
-    function scoreTrackForRegion(track, region) {
-      const key = trackKey(track);
-      const base = playCounts[key] || 0;
-      const hash = [...key].reduce((a,c)=>a+c.charCodeAt(0), 0);
-      const regionBias = {
-        'norte': 13,
-        'nordeste': 29,
-        'centro-oeste': 17,
-        'sudeste': 37,
-        'sul': 23
-      }[region] || 11;
-      return base + ((hash * regionBias) % 55);
-    }
-
-    function renderChartRows(tracks, modeLabel) {
-      sectionTitleEl.textContent = modeLabel;
-      gridEl.innerHTML = '';
-      tracklistEl.style.display = 'block';
-      tracklistEl.innerHTML = '';
-      chartToolbarEl.style.display = 'flex';
-
-      tracks.forEach((t, idx) => {
-        const key = trackKey(t);
-        const plays = playCounts[key] || 0;
-        const row = document.createElement('div');
-        row.className = 'track';
-        row.innerHTML = `
-          <div class="track-number">${idx + 1}</div>
-          <div class="track-meta">
-            <div class="track-title">${t.titulo}</div>
-            <div class="track-artist">${t.artista}</div>
-          </div>
-          <div class="chart-playcount">▶ ${plays} plays</div>`;
-        row.onclick = () => {
-          currentPlaylist = [t];
-          currentIndex = 0;
-          albumCover = t._cover || '';
-          playCurrent(true);
-        };
-        tracklistEl.appendChild(row);
-      });
-    }
-
-    function renderChart(type) {
-      const catalog = getAllTracksCatalog();
-      if (!catalog.length) return;
-
-      if (type === 'global') {
-        const sorted = [...catalog].sort((a,b) => (playCounts[trackKey(b)] || 0) - (playCounts[trackKey(a)] || 0));
-        renderChartRows(sorted.slice(0, 100), 'Top 100 Global');
-        return;
-      }
-
-      if (type === 'br') {
-        const sorted = [...catalog].sort((a,b) => {
-          const aScore = (playCounts[trackKey(a)] || 0) + ((a.artista || '').toLowerCase().includes('pabllo') ? 20 : 0);
-          const bScore = (playCounts[trackKey(b)] || 0) + ((b.artista || '').toLowerCase().includes('pabllo') ? 20 : 0);
-          return bScore - aScore;
-        });
-        renderChartRows(sorted.slice(0, 50), 'Top 50 Brasil');
-        return;
-      }
-
-      const region = regionSelectEl.value;
-      const sorted = [...catalog].sort((a,b) => scoreTrackForRegion(b, region) - scoreTrackForRegion(a, region));
-      renderChartRows(sorted.slice(0, 50), `Top 50 ${region.replace('-', ' ').toUpperCase()}`);
-    }
-
-    function showCharts() {
-      renderChart('global');
-    }
 
     function loadHome() {
       sectionTitleEl.textContent = "Álbuns";
