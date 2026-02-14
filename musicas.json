@@ -10,14 +10,8 @@
           "audio": "SUA_CDN/audios/faixa1.mp3",
           "video": "https://pub-a009e9ce77ba4588b1c701c9eac520fb.r2.dev/Lively/83e0f118-b35f-4f5b-9e1f-9eed1faa52b3.mp4",
           "imagemArtista": ""
-        },
-        {
-          "titulo": "Faixa 2",
-          "artista": "Artista A",
-          "audio": "SUA_CDN/audios/faixa2.mp3",
-          "video": "",
-          "imagemArtista": ""
-        }
+         }
+       }
       ]
     },
     {
@@ -30,13 +24,8 @@
           "audio": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/Loossemble%2520%2528%25EB%25A3%25A8%25EC%2585%2588%25EB%25B8%2594%2529%2520-%2520%2527TTYL%2527%2520MV%2520%5BAdFtOCtmq-Q%5D.mp3",
           "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/4c55da9d-cf57-43ea-8b93-45b94adcbc3a.mp4",
           "imagemArtista": ""
-        },
-        {
-          "titulo": "Faixa 2",
-          "artista": "Artista A",
-          "audio": "SUA_CDN/audios/faixa2.mp3",
-          "video": "",
-          "imagemArtista": ""
+          }
+      ]
         }
       ]
     },
@@ -159,6 +148,24 @@
           "imagemArtista": ""
         }
       ]
+      },
+    {
+      "titulo": "Coisas Naturais",
+      "capa": "https://dash.cloudflare.com/3f3d9fcf69cf8db418e97acb119b980a/r2/default/buckets/comusic/objects/CoisasNaturais%252Fab67616d0000b2737ae4d78852e406eff2f4eef6.jpg/details?prefix=CoisasNaturais%2F",
+      "faixas": [
+        {
+          "titulo": "Coisas Naturais",
+          "artista": "Marina Sena",
+          "audio": "https://dash.cloudflare.com/3f3d9fcf69cf8db418e97acb119b980a/r2/default/buckets/comusic/objects/CoisasNaturais%252FMarina%2520Sena%2520-%2520Coisas%2520Naturais.mp3/details?prefix=CoisasNaturais%2F",
+          "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/FamousMV.MP4",
+          "imagemArtista": "https://dash.cloudflare.com/3f3d9fcf69cf8db418e97acb119b980a/r2/default/buckets/comusic/objects/CoisasNaturais%252Fab6761860000166747bac201717335dff6347bb8.jpg/details?prefix=CoisasNaturais%2F"
+        },
+        {
+          "titulo": "Numa Ilha",
+          "artista": "Marina Sena",
+          "audio": "https://dash.cloudflare.com/3f3d9fcf69cf8db418e97acb119b980a/r2/default/buckets/comusic/objects/CoisasNaturais%252FNumaIlha.mp3/details?prefix=CoisasNaturais%2F",
+          "video": "",
+          "imagemArtista": "https://dash.cloudflare.com/3f3d9fcf69cf8db418e97acb119b980a/r2/default/buckets/comusic/objects/CoisasNaturais%252Fab6761860000166747bac201717335dff6347bb8.jpg/details?prefix=CoisasNaturais%2F"
     }
   ],
   "playlists": [
