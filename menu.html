@@ -309,64 +309,28 @@
     }
     .time { font-size: 12px; color: var(--muted); min-width: 38px; text-align: center; }
 
-
-    .feature-panel {
-      margin: 0 20px 18px;
-      padding: 14px;
+    .chart-toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 0 20px 10px;
+    }
+    .chart-toolbar button,
+    .chart-toolbar select {
       border: 1px solid var(--border);
-      border-radius: 14px;
-      background: rgba(255,255,255,0.03);
-    }
-    .feature-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-    }
-    .feature-card {
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 10px;
-      background: rgba(255,255,255,0.03);
-    }
-    .feature-card h3 {
-      margin: 0 0 8px;
-      font-size: 14px;
-    }
-    .feature-card p {
-      margin: 0 0 8px;
-      font-size: 12px;
-      color: var(--muted);
-    }
-    .feature-card input,
-    .feature-card select,
-    .feature-card button,
-    .feature-card textarea {
-      width: 100%;
-      margin-bottom: 6px;
-      border-radius: 9px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,0.05);
+      border-radius: 999px;
+      background: rgba(255,255,255,.05);
       color: var(--text);
-      padding: 8px;
-      font-size: 12px;
+      padding: 8px 12px;
+      font-size: 13px;
     }
-    .feature-card button { cursor: pointer; }
-    .feature-inline {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-    }
-    .feature-log {
-      max-height: 120px;
-      overflow: auto;
+    .chart-playcount {
       font-size: 12px;
       color: var(--muted);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 6px;
-      background: rgba(0,0,0,0.2);
+      justify-self: end;
+      min-width: 90px;
+      text-align: right;
     }
-    .lyrics-line.active { color: #fff; font-weight: 700; }
 
     @media (max-width: 760px) {
       footer { grid-template-columns: 40px 1fr auto; grid-auto-rows: auto; grid-row-gap: 8px; }
@@ -382,7 +346,6 @@
       .cover-stage-track { font-size: 30px; }
       .cover-stage-artist { font-size: 24px; }
       body.cover-stage-open footer { grid-template-columns: 1fr auto; }
-      .feature-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -393,6 +356,7 @@
       <a href="#" onclick="loadHome();return false;">Início</a>
       <a href="#" onclick="showPlaylists();return false;">Playlists</a>
       <a href="#" onclick="showArtists();return false;">Artistas</a>
+      <a href="#" onclick="showCharts();return false;">Charts</a>
     </nav>
   </header>
 
@@ -407,6 +371,17 @@
     <h2 class="section-title" id="sectionTitle">Álbuns</h2>
     <section class="grid" id="grid"></section>
 
+    <section class="chart-toolbar" id="chartToolbar" style="display:none;">
+      <button onclick="renderChart('global')">Top 100 Global</button>
+      <button onclick="renderChart('br')">Top 50 Brasil</button>
+      <select id="regionSelect" onchange="renderChart('region')">
+        <option value="norte">Top 50 Norte</option>
+        <option value="nordeste">Top 50 Nordeste</option>
+        <option value="centro-oeste">Top 50 Centro-Oeste</option>
+        <option value="sudeste">Top 50 Sudeste</option>
+        <option value="sul">Top 50 Sul</option>
+      </select>
+    </section>
     <section class="tracklist" id="tracklist" style="display:none;"></section>
 
     <section class="feature-panel" id="featurePanel">
@@ -526,6 +501,8 @@
     const artistImageEl = document.getElementById('artistImage');
     const gridEl = document.getElementById('grid');
     const tracklistEl = document.getElementById('tracklist');
+    const chartToolbarEl = document.getElementById('chartToolbar');
+    const regionSelectEl = document.getElementById('regionSelect');
     const sectionTitleEl = document.getElementById('sectionTitle');
 
     const coverEl = document.getElementById('cover');
@@ -581,11 +558,7 @@
     let isShuffle = false;
     let repeatMode = 0;
     let isCoverStageOpen = false;
-    let currentRoom = '';
-    let sleepTimerRef = null;
-    let sleepTimerEndAt = 0;
-    let audioCtx = null;
-    let eqNodes = null;
+    let playCounts = JSON.parse(localStorage.getItem('comusic_play_counts') || '{}');
 
     const ICONS = {
       play: `<svg class="icon icon--solid" viewBox="0 0 24 24"><path d="M9 6.75c0-.8.87-1.29 1.55-.88l7.5 4.5a1.03 1.03 0 0 1 0 1.76l-7.5 4.5A1.03 1.03 0 0 1 9 15.75z"/></svg>`,
@@ -620,146 +593,6 @@
       setButtonIcon(repeatBtn, repeatMode === 1 ? 'repeatOne' : 'repeat');
       setButtonIcon(toggleVideoBtn, forceAudioOnly ? 'audio' : 'video');
       setButtonIcon(fullscreenBtn, 'fullscreen');
-    }
-
-
-    function getCurrentTrack() {
-      return currentPlaylist[currentIndex] || null;
-    }
-
-    function getTrackBpm(track) {
-      if (!track) return 120;
-      return track.bpm || (90 + ((track.titulo || '').length * 7 % 70));
-    }
-
-    function getCrossfadeDuration(trackA, trackB) {
-      const base = Number(crossfadeSeconds.value || 5);
-      if (!crossfadeToggle.checked || !trackA || !trackB) return 0;
-      const diff = Math.abs(getTrackBpm(trackA) - getTrackBpm(trackB));
-      const adapt = Math.max(2, Math.min(10, base - Math.floor(diff / 20) + 1));
-      return adapt;
-    }
-
-    function renderMusicMap() {
-      const t = getCurrentTrack();
-      const places = ['São Paulo', 'Recife', 'Seul', 'Tóquio', 'Lisboa', 'CDMX'];
-      const seed = Math.floor(Date.now() / 60000) % 1000;
-      musicMapLog.innerHTML = places.map((p, i) => {
-        const listeners = 100 + ((seed + i * 37) % 900);
-        const song = t ? `${t.titulo} · ${t.artista}` : 'Sem faixa ativa';
-        return `<div>${p}: <strong>${song}</strong> (${listeners} ouvintes)</div>`;
-      }).join('');
-    }
-
-    function renderPartyChat() {
-      if (!currentRoom) {
-        partyChatLog.innerHTML = 'Entre em uma sala para começar.';
-        return;
-      }
-      const all = JSON.parse(localStorage.getItem('comusic_party_chat') || '{}');
-      const messages = all[currentRoom] || [];
-      partyChatLog.innerHTML = messages.slice(-20).map(m => `<div><strong>${m.user}</strong>: ${m.text}</div>`).join('') || 'Sem mensagens ainda.';
-      partyChatLog.scrollTop = partyChatLog.scrollHeight;
-    }
-
-    function addPartyMessage(text) {
-      if (!currentRoom || !text.trim()) return;
-      const all = JSON.parse(localStorage.getItem('comusic_party_chat') || '{}');
-      all[currentRoom] = all[currentRoom] || [];
-      all[currentRoom].push({ user: 'Você', text: text.trim(), at: Date.now() });
-      localStorage.setItem('comusic_party_chat', JSON.stringify(all));
-      renderPartyChat();
-    }
-
-    function getLyricsForTrack(track) {
-      if (!track) return [];
-      const base = track.titulo || 'Faixa';
-      return [
-        { t: 0, pt: `${base} começa agora`, en: `${base} starts right now` },
-        { t: 12, pt: `Sinta o ritmo de ${track.artista || 'artista'}`, en: `Feel the groove of ${track.artista || 'artist'}` },
-        { t: 24, pt: `Refrão chegando`, en: `Chorus is coming` },
-        { t: 36, pt: `A energia sobe`, en: `Energy rises` },
-        { t: 50, pt: `Fechando o verso`, en: `Closing the verse` }
-      ];
-    }
-
-    function renderLyrics() {
-      const track = getCurrentTrack();
-      const lines = getLyricsForTrack(track);
-      const currentTime = currentMedia ? Number(currentMedia.currentTime || 0) : 0;
-      lyricsBox.innerHTML = lines.map((line, idx) => {
-        const next = lines[idx + 1]?.t ?? 9999;
-        const active = currentTime >= line.t && currentTime < next;
-        const content = lyricsTranslateToggle.checked ? `${line.pt} — ${line.en}` : line.pt;
-        return `<div class="lyrics-line ${active ? 'active' : ''}">${content}</div>`;
-      }).join('') || 'Sem letra disponível.';
-    }
-
-    function ensureAudioGraph() {
-      if (audioCtx || !window.AudioContext) return;
-      audioCtx = new AudioContext();
-      const srcA = audioCtx.createMediaElementSource(audioEl);
-      const srcB = audioCtx.createMediaElementSource(audioElB);
-      const low = audioCtx.createBiquadFilter();
-      const mid = audioCtx.createBiquadFilter();
-      const high = audioCtx.createBiquadFilter();
-      low.type = 'lowshelf'; low.frequency.value = 220;
-      mid.type = 'peaking'; mid.frequency.value = 1200; mid.Q.value = 1;
-      high.type = 'highshelf'; high.frequency.value = 4200;
-      srcA.connect(low); srcB.connect(low);
-      low.connect(mid); mid.connect(high); high.connect(audioCtx.destination);
-      eqNodes = { low, mid, high };
-    }
-
-    function applyEqPreset(name) {
-      ensureAudioGraph();
-      if (!eqNodes) return;
-      const presets = {
-        flat: [0, 0, 0],
-        pop: [2, 1, 2],
-        bass: [6, -1, 1],
-        vocal: [-1, 3, 2]
-      };
-      const [l, m, h] = presets[name] || presets.flat;
-      eqNodes.low.gain.value = l;
-      eqNodes.mid.gain.value = m;
-      eqNodes.high.gain.value = h;
-    }
-
-    function suggestedPresetForArtist(artist = '') {
-      const a = artist.toLowerCase();
-      if (a.includes('blackpink') || a.includes('nmixx')) return 'bass';
-      if (a.includes('demi') || a.includes('twice')) return 'pop';
-      return 'vocal';
-    }
-
-    function refreshSnapshots() {
-      const snaps = JSON.parse(localStorage.getItem('comusic_snapshots') || '[]');
-      snapshotSelect.innerHTML = snaps.map((s, i) => `<option value="${i}">${new Date(s.at).toLocaleString()} — ${s.name}</option>`).join('') || '<option value="">Sem snapshots</option>';
-    }
-
-    function startSleepTimer(minutes) {
-      clearInterval(sleepTimerRef);
-      const totalMs = minutes * 60 * 1000;
-      sleepTimerEndAt = Date.now() + totalMs;
-      const originalVolume = currentMedia ? currentMedia.volume : 1;
-      sleepTimerRef = setInterval(() => {
-        const rem = sleepTimerEndAt - Date.now();
-        if (rem <= 0) {
-          if (currentMedia) currentMedia.pause();
-          if (currentMedia) currentMedia.volume = originalVolume;
-          clearInterval(sleepTimerRef);
-          sleepTimerRef = null;
-          sleepStatus.textContent = 'Timer finalizado. Reprodução pausada suavemente.';
-          return;
-        }
-        const remMin = Math.ceil(rem / 60000);
-        if (currentMedia) {
-          const fadeWindow = Math.min(5 * 60 * 1000, totalMs);
-          if (rem <= fadeWindow) currentMedia.volume = Math.max(0.05, originalVolume * (rem / fadeWindow));
-        }
-        sleepStatus.textContent = `Timer ativo: ${remMin} min restantes.`;
-      }, 1000);
     }
 
     const fmt = secs => {
@@ -805,10 +638,111 @@
 
     loadMusicData();
 
+
+    function trackKey(track) {
+      return `${(track?.titulo || '').trim()}::${(track?.artista || '').trim()}`;
+    }
+
+    function savePlayCounts() {
+      localStorage.setItem('comusic_play_counts', JSON.stringify(playCounts));
+    }
+
+    function countPlay(track) {
+      const key = trackKey(track);
+      if (!key || key === '::') return;
+      playCounts[key] = (playCounts[key] || 0) + 1;
+      savePlayCounts();
+    }
+
+    function getAllTracksCatalog() {
+      if (!musicData) return [];
+      const out = [];
+      (musicData.albuns || []).forEach(album => {
+        (album.faixas || []).forEach(f => out.push({ ...f, _cover: album.capa || '', _source: album.titulo || '' }));
+      });
+      (musicData.playlists || []).forEach(pl => {
+        (pl.faixas || []).forEach(f => out.push({ ...f, _cover: pl.capa || '', _source: pl.nome || '' }));
+      });
+      return out;
+    }
+
+    function scoreTrackForRegion(track, region) {
+      const key = trackKey(track);
+      const base = playCounts[key] || 0;
+      const hash = [...key].reduce((a,c)=>a+c.charCodeAt(0), 0);
+      const regionBias = {
+        'norte': 13,
+        'nordeste': 29,
+        'centro-oeste': 17,
+        'sudeste': 37,
+        'sul': 23
+      }[region] || 11;
+      return base + ((hash * regionBias) % 55);
+    }
+
+    function renderChartRows(tracks, modeLabel) {
+      sectionTitleEl.textContent = modeLabel;
+      gridEl.innerHTML = '';
+      tracklistEl.style.display = 'block';
+      tracklistEl.innerHTML = '';
+      chartToolbarEl.style.display = 'flex';
+
+      tracks.forEach((t, idx) => {
+        const key = trackKey(t);
+        const plays = playCounts[key] || 0;
+        const row = document.createElement('div');
+        row.className = 'track';
+        row.innerHTML = `
+          <div class="track-number">${idx + 1}</div>
+          <div class="track-meta">
+            <div class="track-title">${t.titulo}</div>
+            <div class="track-artist">${t.artista}</div>
+          </div>
+          <div class="chart-playcount">▶ ${plays} plays</div>`;
+        row.onclick = () => {
+          currentPlaylist = [t];
+          currentIndex = 0;
+          albumCover = t._cover || '';
+          playCurrent(true);
+        };
+        tracklistEl.appendChild(row);
+      });
+    }
+
+    function renderChart(type) {
+      const catalog = getAllTracksCatalog();
+      if (!catalog.length) return;
+
+      if (type === 'global') {
+        const sorted = [...catalog].sort((a,b) => (playCounts[trackKey(b)] || 0) - (playCounts[trackKey(a)] || 0));
+        renderChartRows(sorted.slice(0, 100), 'Top 100 Global');
+        return;
+      }
+
+      if (type === 'br') {
+        const sorted = [...catalog].sort((a,b) => {
+          const aScore = (playCounts[trackKey(a)] || 0) + ((a.artista || '').toLowerCase().includes('pabllo') ? 20 : 0);
+          const bScore = (playCounts[trackKey(b)] || 0) + ((b.artista || '').toLowerCase().includes('pabllo') ? 20 : 0);
+          return bScore - aScore;
+        });
+        renderChartRows(sorted.slice(0, 50), 'Top 50 Brasil');
+        return;
+      }
+
+      const region = regionSelectEl.value;
+      const sorted = [...catalog].sort((a,b) => scoreTrackForRegion(b, region) - scoreTrackForRegion(a, region));
+      renderChartRows(sorted.slice(0, 50), `Top 50 ${region.replace('-', ' ').toUpperCase()}`);
+    }
+
+    function showCharts() {
+      renderChart('global');
+    }
+
     function loadHome() {
       sectionTitleEl.textContent = "Álbuns";
       gridEl.innerHTML = "";
       tracklistEl.style.display = "none";
+      chartToolbarEl.style.display = "none";
       musicData.albuns.forEach(album => {
         const div = document.createElement("div");
         div.className = "card";
@@ -822,6 +756,7 @@
       sectionTitleEl.textContent = album.titulo;
       tracklistEl.innerHTML = "";
       tracklistEl.style.display = "block";
+      chartToolbarEl.style.display = "none";
       gridEl.innerHTML = "";
       currentPlaylist = album.faixas;
       albumCover = album.capa;
@@ -846,6 +781,7 @@
       sectionTitleEl.textContent = "Playlists";
       gridEl.innerHTML = "";
       tracklistEl.style.display = "none";
+      chartToolbarEl.style.display = "none";
       musicData.playlists.forEach(pl => {
         const div = document.createElement("div");
         div.className = "card";
@@ -859,6 +795,7 @@
       sectionTitleEl.textContent = "Artistas";
       gridEl.innerHTML = "";
       tracklistEl.style.display = "none";
+      chartToolbarEl.style.display = "none";
       let artistas = new Map();
       musicData.albuns.forEach(a => a.faixas.forEach(f => artistas.set(f.artista, f.imagemArtista || a.capa)));
       artistas.forEach((img, nome) => {
@@ -898,6 +835,7 @@
     function playCurrent(fromUserGesture = false) {
       if (!currentPlaylist.length) return;
       const m = currentPlaylist[currentIndex];
+      countPlay(m);
       const useVideo = !!m.video && !forceAudioOnly;
 
       audioEl.volume = 1; videoEl.volume = 1;
@@ -917,34 +855,7 @@
         videoEl.pause(); videoEl.style.display = 'none';
         artistImageEl.src = m.imagemArtista || albumCover || (musicData?.placeholderArtista || '');
         artistImageEl.style.display = 'block';
-
-        const prevTrack = currentPlaylist[currentIndex - 1] || null;
-        const fadeSec = getCrossfadeDuration(prevTrack, m);
-        if (useB && fadeSec > 0) {
-          targetAudio.volume = 0.01;
-          targetAudio.play().then(() => {
-            const steps = Math.max(1, fadeSec * 10);
-            let n = 0;
-            const from = audioEl;
-            const to = targetAudio;
-            const iv = setInterval(() => {
-              n++;
-              const k = n / steps;
-              from.volume = Math.max(0, 1 - k);
-              to.volume = Math.min(1, k);
-              if (n >= steps) {
-                clearInterval(iv);
-                from.pause();
-                from.volume = 1;
-                currentMedia = to;
-                refreshIcons();
-              }
-            }, 100);
-          }).catch(() => {});
-        } else {
-          currentMedia = targetAudio;
-        }
-
+        currentMedia = audioEl;
         toggleVideoBtn.style.display = m.video ? 'inline-flex' : 'none';
         toggleVideoBtn.querySelector('span:last-child').textContent = 'Ver Clipe';
       }
@@ -974,6 +885,7 @@
       };
 
       updateTracklistActive();
+      if (chartToolbarEl.style.display === "flex") renderChart("global");
     }
 
     toggleVideoBtn.onclick = () => { forceAudioOnly = !forceAudioOnly; playCurrent(true); updateCoverStageInfo(); };
@@ -1017,75 +929,7 @@
 
     seekBar.oninput = () => { if (currentMedia) currentMedia.currentTime = seekBar.value; };
 
-
-    partyJoinBtn.onclick = () => {
-      currentRoom = partyRoomInput.value.trim();
-      renderPartyChat();
-    };
-    partySendBtn.onclick = () => {
-      addPartyMessage(partyMessageInput.value);
-      partyMessageInput.value = '';
-    };
-    refreshMapBtn.onclick = renderMusicMap;
-    lyricsTranslateToggle.onchange = renderLyrics;
-    eqPresetSelect.onchange = () => applyEqPreset(eqPresetSelect.value);
-    applyArtistPresetBtn.onclick = () => {
-      const t = getCurrentTrack();
-      const preset = suggestedPresetForArtist(t?.artista || '');
-      eqPresetSelect.value = preset;
-      applyEqPreset(preset);
-    };
-    sleepStartBtn.onclick = () => startSleepTimer(Number(sleepMinutesInput.value || 20));
-    sleepCancelBtn.onclick = () => {
-      clearInterval(sleepTimerRef);
-      sleepTimerRef = null;
-      if (currentMedia) currentMedia.volume = 1;
-      sleepStatus.textContent = 'Timer cancelado.';
-    };
-    snapshotSaveBtn.onclick = () => {
-      if (!currentPlaylist.length) return;
-      const snaps = JSON.parse(localStorage.getItem('comusic_snapshots') || '[]');
-      snaps.unshift({
-        at: Date.now(),
-        name: sectionTitleEl.textContent || 'Playlist',
-        index: currentIndex,
-        playlist: JSON.parse(JSON.stringify(currentPlaylist))
-      });
-      localStorage.setItem('comusic_snapshots', JSON.stringify(snaps.slice(0, 30)));
-      refreshSnapshots();
-    };
-    snapshotLoadBtn.onclick = () => {
-      const snaps = JSON.parse(localStorage.getItem('comusic_snapshots') || '[]');
-      const idx = Number(snapshotSelect.value);
-      if (!Number.isFinite(idx) || !snaps[idx]) return;
-      currentPlaylist = snaps[idx].playlist;
-      currentIndex = Math.min(snaps[idx].index || 0, currentPlaylist.length - 1);
-      tracklistEl.innerHTML = '';
-      currentPlaylist.forEach((faixa, i) => {
-        const tr = document.createElement('div');
-        tr.className = 'track';
-        tr.innerHTML = `<div class="track-number">${i+1}</div><div class="track-meta"><div class="track-title">${faixa.titulo}</div><div class="track-artist">${faixa.artista}</div></div><button aria-label="Reproduzir faixa"><span class="icon-slot" aria-hidden="true"></span></button>`;
-        tr.onclick = () => { currentIndex = i; playCurrent(true); };
-        tracklistEl.appendChild(tr);
-      });
-      tracklistEl.style.display = 'block';
-      gridEl.innerHTML = '';
-      sectionTitleEl.textContent = `Snapshot: ${snaps[idx].name}`;
-      playCurrent(true);
-    };
-    snapshotDeleteBtn.onclick = () => {
-      const snaps = JSON.parse(localStorage.getItem('comusic_snapshots') || '[]');
-      const idx = Number(snapshotSelect.value);
-      if (!Number.isFinite(idx) || !snaps[idx]) return;
-      snaps.splice(idx, 1);
-      localStorage.setItem('comusic_snapshots', JSON.stringify(snaps));
-      refreshSnapshots();
-    };
-
     updateCoverStageInfo();
-    renderMusicMap();
-    renderLyrics();
-    refreshSnapshots();
     refreshIcons();
   </script>
 </body>
