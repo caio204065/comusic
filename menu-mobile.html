@@ -18,6 +18,13 @@
       if (!forceMobile && !isMobile) window.location.replace('menu.html');
     })();
   </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+  </script>
   <style>
     :root { --bg:#000; --panel:rgba(34,34,40,.82); --text:#f5f5f7; --muted:#9b9ba4; --accent:#ff2d55; --line:#202027; }
     *{box-sizing:border-box}
@@ -312,17 +319,31 @@
       } catch (_) {}
     }
 
+    function getArtworkSources(track) {
+      const sources = [
+        track?.imagemArtista,
+        currentAlbum?.capa,
+        FALLBACK_ARTWORK
+      ].filter(Boolean);
+
+      return [...new Set(sources)].flatMap((src) => {
+        const isData = src.startsWith('data:');
+        if (isData) return [{ src, sizes: '512x512', type: 'image/svg+xml' }];
+        return [
+          { src, sizes: '96x96' },
+          { src, sizes: '192x192' },
+          { src, sizes: '512x512' }
+        ];
+      });
+    }
+
     function updateMediaSession(track) {
       if (!('mediaSession' in navigator) || !track) return;
-      const cover = currentAlbum?.capa || FALLBACK_ARTWORK;
       navigator.mediaSession.metadata = new MediaMetadata({
         title: track.titulo || 'Faixa',
         artist: track.artista || 'Artista',
         album: currentAlbum?.titulo || 'CoMusic',
-        artwork: [
-          { src: cover, sizes: '512x512', type: cover.startsWith('data:') ? 'image/svg+xml' : 'image/jpeg' },
-          { src: FALLBACK_ARTWORK, sizes: '512x512', type: 'image/svg+xml' }
-        ]
+        artwork: getArtworkSources(track)
       });
 
       navigator.mediaSession.playbackState = audioEl.paused ? 'paused' : 'playing';

@@ -16,6 +16,13 @@
       if (!forceDesktop && isMobile) window.location.replace('menu-mobile.html');
     })();
   </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+  </script>
   <style>
     :root {
       --bg: #0a0a0d;
