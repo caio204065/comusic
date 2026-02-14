@@ -538,6 +538,20 @@
       return `${m}:${s}`;
     };
 
+    function isUsableMediaUrl(value) {
+      if (typeof value !== 'string') return false;
+      const v = value.trim();
+      if (!v) return false;
+      if (v.includes('SUA_CDN/')) return false;
+      return true;
+    }
+
+    function resolveTrackSources(track) {
+      const audioSrc = isUsableMediaUrl(track?.audio) ? track.audio.trim() : '';
+      const videoSrc = isUsableMediaUrl(track?.video) ? track.video.trim() : '';
+      return { audioSrc, videoSrc };
+    }
+
     async function loadMusicData() {
       const urls = [
         'musicas.json',
@@ -716,6 +730,7 @@
 
     function updateCoverStageInfo(track = null) {
       const m = track || currentPlaylist[currentIndex];
+      const { videoSrc } = resolveTrackSources(m);
       if (!m) {
         coverStageTrackEl.textContent = 'Nenhuma faixa';
         coverStageArtistEl.textContent = 'Selecione uma música';
@@ -730,35 +745,54 @@
       coverStageLabelEl.textContent = albumCover ? 'Álbum em reprodução' : 'Tocando agora';
       coverStageImageEl.src = albumCover || m.imagemArtista || coverEl.src || (musicData?.placeholderArtista || '');
       coverStageToggleLabelEl.textContent = forceAudioOnly ? 'Mudar para vídeo' : 'Mudar para áudio';
-      coverStageToggleVideoBtn.style.display = m.video ? 'inline-flex' : 'none';
+      coverStageToggleVideoBtn.style.display = videoSrc ? 'inline-flex' : 'none';
     }
 
     function playCurrent(fromUserGesture = false) {
       if (!currentPlaylist.length) return;
       const m = currentPlaylist[currentIndex];
-      countPlay(m);
-      const useVideo = !!m.video && !forceAudioOnly;
+      const { audioSrc, videoSrc } = resolveTrackSources(m);
+      let useVideo = !!videoSrc && !forceAudioOnly;
+
+      if (!useVideo && !audioSrc && videoSrc) useVideo = true;
+      if (useVideo && !videoSrc && audioSrc) useVideo = false;
+      if (!audioSrc && !videoSrc) {
+        nowPlayingEl.textContent = `${m.titulo} — ${m.artista} (sem mídia disponível)`;
+        refreshIcons();
+        return;
+      }
 
       audioEl.volume = 1; videoEl.volume = 1;
+      audioEl.onerror = null;
+      videoEl.onerror = null;
 
       if (useVideo) {
-        videoEl.src = m.video || '';
+        videoEl.src = videoSrc;
         videoEl.style.display = 'block'; artistImageEl.style.display = 'none';
         audioEl.pause(); audioEl.src = '';
         currentMedia = videoEl;
-        toggleVideoBtn.style.display = m.video ? 'inline-flex' : 'none';
+        toggleVideoBtn.style.display = videoSrc ? 'inline-flex' : 'none';
         toggleVideoBtn.querySelector('span:last-child').textContent = 'Só Áudio';
+
+        videoEl.onerror = () => {
+          if (!audioSrc) return;
+          forceAudioOnly = true;
+          playCurrent(true);
+        };
       } else {
-        const useB = currentMedia === audioEl && !audioEl.paused;
-        const targetAudio = useB ? audioElB : audioEl;
-        targetAudio.src = m.audio || m.video || '';
-        targetAudio.volume = 1;
+        audioEl.src = audioSrc || videoSrc;
         videoEl.pause(); videoEl.style.display = 'none';
         artistImageEl.src = m.imagemArtista || albumCover || (musicData?.placeholderArtista || '');
         artistImageEl.style.display = 'block';
         currentMedia = audioEl;
-        toggleVideoBtn.style.display = m.video ? 'inline-flex' : 'none';
+        toggleVideoBtn.style.display = videoSrc ? 'inline-flex' : 'none';
         toggleVideoBtn.querySelector('span:last-child').textContent = 'Ver Clipe';
+
+        audioEl.onerror = () => {
+          if (!videoSrc) return;
+          forceAudioOnly = false;
+          playCurrent(true);
+        };
       }
 
       nowPlayingEl.textContent = `${m.titulo} — ${m.artista}`;
@@ -799,7 +833,12 @@
     };
 
     playBtn.onclick = () => {
-      if (!currentMedia) return;
+      if (!currentMedia) {
+        if (currentPlaylist.length) {
+          playCurrent(true);
+        }
+        return;
+      }
       if (currentMedia.paused) currentMedia.play();
       else currentMedia.pause();
       refreshIcons();
