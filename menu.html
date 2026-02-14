@@ -587,7 +587,7 @@
       }
       coverStageTrackEl.textContent = m.titulo || 'Faixa sem nome';
       coverStageArtistEl.textContent = m.artista || 'Artista desconhecido';
-      coverStageLabelEl.textContent = albumCover ? 'Álbum em reprodução' : 'Tocando agora';
+      coverStageLabelEl.textContent = albumCover ? 'Tocando agora' : 'Tocando agora';
       coverStageImageEl.src = albumCover || m.imagemArtista || coverEl.src || (musicData?.placeholderArtista || '');
       coverStageToggleLabelEl.textContent = forceAudioOnly ? 'Mudar para vídeo' : 'Mudar para áudio';
       coverStageToggleVideoBtn.style.display = m.video ? 'inline-flex' : 'none';
