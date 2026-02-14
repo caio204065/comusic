@@ -209,7 +209,7 @@
     <button data-tab="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.2-4.2"/></svg>Buscar</button>
   </nav>
 
-  <audio id="audioPlayer"></audio>
+  <audio id="audioPlayer" preload="metadata" playsinline x-webkit-airplay="allow"></audio>
 
   <script>
     const RECENT_ALBUM_KEY = 'comusic_mobile_recent_albums';
@@ -257,6 +257,7 @@
 
     const PLAY_ICON = '<path d="M8 5v14l11-7Z"/>';
     const PAUSE_ICON = '<path d="M8 5h3v14H8zM13 5h3v14h-3z"/>';
+    const FALLBACK_ARTWORK = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512"><rect width="100%" height="100%" fill="#000"/><text x="50%" y="52%" fill="#fff" font-family="Arial" font-size="72" text-anchor="middle">CoMusic</text></svg>');
 
     let musicData = null;
     let currentPlaylist = [];
@@ -299,15 +300,32 @@
       renderRecentSection();
     }
 
+    function updatePositionState() {
+      if (!('mediaSession' in navigator) || !navigator.mediaSession.setPositionState) return;
+      if (!audioEl.duration || !isFinite(audioEl.duration)) return;
+      try {
+        navigator.mediaSession.setPositionState({
+          duration: audioEl.duration,
+          playbackRate: audioEl.playbackRate || 1,
+          position: Math.min(audioEl.currentTime, audioEl.duration)
+        });
+      } catch (_) {}
+    }
+
     function updateMediaSession(track) {
       if (!('mediaSession' in navigator) || !track) return;
+      const cover = currentAlbum?.capa || FALLBACK_ARTWORK;
       navigator.mediaSession.metadata = new MediaMetadata({
         title: track.titulo || 'Faixa',
         artist: track.artista || 'Artista',
         album: currentAlbum?.titulo || 'CoMusic',
-        artwork: [{ src: currentAlbum?.capa || '', sizes: '512x512', type: 'image/jpeg' }]
+        artwork: [
+          { src: cover, sizes: '512x512', type: cover.startsWith('data:') ? 'image/svg+xml' : 'image/jpeg' },
+          { src: FALLBACK_ARTWORK, sizes: '512x512', type: 'image/svg+xml' }
+        ]
       });
 
+      navigator.mediaSession.playbackState = audioEl.paused ? 'paused' : 'playing';
       navigator.mediaSession.setActionHandler('play', () => audioEl.play().catch(() => {}));
       navigator.mediaSession.setActionHandler('pause', () => audioEl.pause());
       navigator.mediaSession.setActionHandler('previoustrack', () => prevTrack());
@@ -315,6 +333,7 @@
       navigator.mediaSession.setActionHandler('seekto', (details) => {
         if (typeof details.seekTime === 'number') audioEl.currentTime = details.seekTime;
       });
+      updatePositionState();
     }
 
     async function loadMusicData() {
@@ -479,12 +498,12 @@
       }
 
       audioEl.src = src;
-      audioEl.play().catch(() => {});
       updatePlayerUi(track);
+      updateMediaSession(track);
+      audioEl.play().then(() => updateMediaSession(track)).catch(() => {});
       registerRecentAlbum(albumIndex);
       miniPlayerEl.classList.remove('hidden');
       refreshPlayIcons();
-      updateMediaSession(track);
     }
 
     function playCurrent() {
@@ -616,9 +635,20 @@
       npSeekEl.value = Number.isFinite(progress) ? progress : 0;
       npCurrentEl.textContent = fmt(audioEl.currentTime);
       npRemainEl.textContent = `-${fmt(Math.max(audioEl.duration - audioEl.currentTime, 0))}`;
+      updatePositionState();
     });
-    audioEl.addEventListener('play', refreshPlayIcons);
-    audioEl.addEventListener('pause', refreshPlayIcons);
+    audioEl.addEventListener('play', () => {
+      refreshPlayIcons();
+      if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
+      const track = currentPlaylist[currentIndex];
+      if (track) updateMediaSession(track);
+    });
+    audioEl.addEventListener('pause', () => {
+      refreshPlayIcons();
+      if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
+    });
+    audioEl.addEventListener('loadedmetadata', updatePositionState);
+    audioEl.addEventListener('ratechange', updatePositionState);
     audioEl.addEventListener('ended', nextTrack);
 
     loadMusicData();
