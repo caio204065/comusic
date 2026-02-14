@@ -384,6 +384,17 @@
     <h2 class="section-title" id="sectionTitle">Álbuns</h2>
     <section class="grid" id="grid"></section>
 
+    <section class="chart-toolbar" id="chartToolbar" style="display:none;">
+      <button onclick="renderChart('global')">Top 100 Global</button>
+      <button onclick="renderChart('br')">Top 50 Brasil</button>
+      <select id="regionSelect" onchange="renderChart('region')">
+        <option value="norte">Top 50 Norte</option>
+        <option value="nordeste">Top 50 Nordeste</option>
+        <option value="centro-oeste">Top 50 Centro-Oeste</option>
+        <option value="sudeste">Top 50 Sudeste</option>
+        <option value="sul">Top 50 Sul</option>
+      </select>
+    </section>
     <section class="tracklist" id="tracklist" style="display:none;"></section>
 
     <section class="search-panel" id="searchPanel" style="display:none;">
@@ -426,14 +437,18 @@
     </div>
 
     <audio id="audioPlayer"></audio>
+    <audio id="audioPlayerB"></audio>
   </footer>
 
   <script>
     const videoEl = document.getElementById('highlightVideo');
     const audioEl = document.getElementById('audioPlayer');
+    const audioElB = document.getElementById('audioPlayerB');
     const artistImageEl = document.getElementById('artistImage');
     const gridEl = document.getElementById('grid');
     const tracklistEl = document.getElementById('tracklist');
+    const chartToolbarEl = document.getElementById('chartToolbar');
+    const regionSelectEl = document.getElementById('regionSelect');
     const sectionTitleEl = document.getElementById('sectionTitle');
     const searchPanelEl = document.getElementById('searchPanel');
     const searchInputEl = document.getElementById('searchInput');
@@ -459,6 +474,29 @@
     const durationEl = document.getElementById('duration');
     const fullscreenBtn = document.getElementById('fullscreenBtn');
     const toggleVideoBtn = document.getElementById('toggleVideoBtn');
+
+    const partyRoomInput = document.getElementById('partyRoomInput');
+    const partyJoinBtn = document.getElementById('partyJoinBtn');
+    const partyMessageInput = document.getElementById('partyMessageInput');
+    const partySendBtn = document.getElementById('partySendBtn');
+    const partyChatLog = document.getElementById('partyChatLog');
+    const refreshMapBtn = document.getElementById('refreshMapBtn');
+    const musicMapLog = document.getElementById('musicMapLog');
+    const crossfadeToggle = document.getElementById('crossfadeToggle');
+    const crossfadeSeconds = document.getElementById('crossfadeSeconds');
+    const eqPresetSelect = document.getElementById('eqPresetSelect');
+    const applyArtistPresetBtn = document.getElementById('applyArtistPresetBtn');
+    const lyricsTranslateToggle = document.getElementById('lyricsTranslateToggle');
+    const lyricsBox = document.getElementById('lyricsBox');
+    const sleepMinutesInput = document.getElementById('sleepMinutesInput');
+    const sleepStartBtn = document.getElementById('sleepStartBtn');
+    const sleepCancelBtn = document.getElementById('sleepCancelBtn');
+    const sleepStatus = document.getElementById('sleepStatus');
+    const snapshotSaveBtn = document.getElementById('snapshotSaveBtn');
+    const snapshotLoadBtn = document.getElementById('snapshotLoadBtn');
+    const snapshotDeleteBtn = document.getElementById('snapshotDeleteBtn');
+    const snapshotSelect = document.getElementById('snapshotSelect');
+
 
     let musicData = null;
     let currentPlaylist = [];
@@ -823,6 +861,7 @@
       };
 
       updateTracklistActive();
+      if (chartToolbarEl.style.display === "flex") renderChart("global");
     }
 
     toggleVideoBtn.onclick = () => { forceAudioOnly = !forceAudioOnly; playCurrent(true); updateCoverStageInfo(); };
@@ -866,6 +905,7 @@
       seekBar.value = currentMedia.currentTime;
       currentTimeEl.textContent = fmt(currentMedia.currentTime);
       durationEl.textContent = fmt(currentMedia.duration);
+      renderLyrics();
     }, 500);
 
     seekBar.oninput = () => { if (currentMedia) currentMedia.currentTime = seekBar.value; };
