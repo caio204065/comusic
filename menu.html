@@ -309,6 +309,65 @@
     }
     .time { font-size: 12px; color: var(--muted); min-width: 38px; text-align: center; }
 
+
+    .feature-panel {
+      margin: 0 20px 18px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.03);
+    }
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .feature-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      background: rgba(255,255,255,0.03);
+    }
+    .feature-card h3 {
+      margin: 0 0 8px;
+      font-size: 14px;
+    }
+    .feature-card p {
+      margin: 0 0 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .feature-card input,
+    .feature-card select,
+    .feature-card button,
+    .feature-card textarea {
+      width: 100%;
+      margin-bottom: 6px;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      padding: 8px;
+      font-size: 12px;
+    }
+    .feature-card button { cursor: pointer; }
+    .feature-inline {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .feature-log {
+      max-height: 120px;
+      overflow: auto;
+      font-size: 12px;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px;
+      background: rgba(0,0,0,0.2);
+    }
+    .lyrics-line.active { color: #fff; font-weight: 700; }
+
     @media (max-width: 760px) {
       footer { grid-template-columns: 40px 1fr auto; grid-auto-rows: auto; grid-row-gap: 8px; }
       .progress { grid-column: 1 / -1; }
@@ -323,6 +382,7 @@
       .cover-stage-track { font-size: 30px; }
       .cover-stage-artist { font-size: 24px; }
       body.cover-stage-open footer { grid-template-columns: 1fr auto; }
+      .feature-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -348,6 +408,78 @@
     <section class="grid" id="grid"></section>
 
     <section class="tracklist" id="tracklist" style="display:none;"></section>
+
+    <section class="feature-panel" id="featurePanel">
+      <h2 class="section-title" style="padding:0;margin:0 0 10px;">Labs CoMusic (Social, Imersão e Pro)</h2>
+      <div class="feature-grid">
+        <article class="feature-card">
+          <h3>Listening Party + Chat</h3>
+          <p>Crie/sincronize uma sala local para ouvir junto.</p>
+          <div class="feature-inline">
+            <input id="partyRoomInput" placeholder="Sala (ex.: kpop-night)" />
+            <button id="partyJoinBtn">Entrar sala</button>
+          </div>
+          <div class="feature-inline">
+            <input id="partyMessageInput" placeholder="Mensagem" />
+            <button id="partySendBtn">Enviar</button>
+          </div>
+          <div id="partyChatLog" class="feature-log"></div>
+        </article>
+
+        <article class="feature-card">
+          <h3>Mapas Musicais (tempo real simulado)</h3>
+          <p>Descoberta por cidade/país com base na faixa atual.</p>
+          <button id="refreshMapBtn">Atualizar mapa</button>
+          <div id="musicMapLog" class="feature-log"></div>
+        </article>
+
+        <article class="feature-card">
+          <h3>Crossfade Inteligente + EQ Presets</h3>
+          <p>Transição suave com duração adaptada ao BPM + presets de artista.</p>
+          <div class="feature-inline">
+            <label style="display:flex;align-items:center;gap:6px;margin:0;"><input id="crossfadeToggle" type="checkbox" style="width:auto;margin:0;"/> Ativar crossfade</label>
+            <input id="crossfadeSeconds" type="number" min="1" max="12" value="5" />
+          </div>
+          <select id="eqPresetSelect">
+            <option value="flat">EQ: Flat</option>
+            <option value="pop">EQ: Pop</option>
+            <option value="bass">EQ: Bass Boost</option>
+            <option value="vocal">EQ: Vocal</option>
+          </select>
+          <button id="applyArtistPresetBtn">Aplicar preset sugerido do artista atual</button>
+        </article>
+
+        <article class="feature-card">
+          <h3>Letras sincronizadas + tradução</h3>
+          <p>Exibe linhas por tempo da música (demo local).</p>
+          <label style="display:flex;align-items:center;gap:6px;margin:0 0 8px;"><input id="lyricsTranslateToggle" type="checkbox" style="width:auto;margin:0;"/> Mostrar tradução</label>
+          <div id="lyricsBox" class="feature-log"></div>
+        </article>
+
+        <article class="feature-card">
+          <h3>Timer de Sono Progressivo</h3>
+          <p>Diminui o volume nos últimos 5 min do timer.</p>
+          <div class="feature-inline">
+            <input id="sleepMinutesInput" type="number" min="1" max="180" value="20" />
+            <button id="sleepStartBtn">Iniciar timer</button>
+          </div>
+          <button id="sleepCancelBtn">Cancelar timer</button>
+          <div id="sleepStatus" class="feature-log">Timer inativo.</div>
+        </article>
+
+        <article class="feature-card">
+          <h3>Snapshot de Playlist</h3>
+          <p>Salve e restaure versões da playlist atual.</p>
+          <div class="feature-inline">
+            <button id="snapshotSaveBtn">Salvar snapshot</button>
+            <button id="snapshotLoadBtn">Carregar selecionado</button>
+          </div>
+          <select id="snapshotSelect"></select>
+          <button id="snapshotDeleteBtn">Excluir snapshot</button>
+        </article>
+      </div>
+    </section>
+
   </div>
 
   <section id="coverStage" class="cover-stage" aria-hidden="true">
@@ -384,11 +516,13 @@
     </div>
 
     <audio id="audioPlayer"></audio>
+    <audio id="audioPlayerB"></audio>
   </footer>
 
   <script>
     const videoEl = document.getElementById('highlightVideo');
     const audioEl = document.getElementById('audioPlayer');
+    const audioElB = document.getElementById('audioPlayerB');
     const artistImageEl = document.getElementById('artistImage');
     const gridEl = document.getElementById('grid');
     const tracklistEl = document.getElementById('tracklist');
@@ -415,6 +549,29 @@
     const fullscreenBtn = document.getElementById('fullscreenBtn');
     const toggleVideoBtn = document.getElementById('toggleVideoBtn');
 
+    const partyRoomInput = document.getElementById('partyRoomInput');
+    const partyJoinBtn = document.getElementById('partyJoinBtn');
+    const partyMessageInput = document.getElementById('partyMessageInput');
+    const partySendBtn = document.getElementById('partySendBtn');
+    const partyChatLog = document.getElementById('partyChatLog');
+    const refreshMapBtn = document.getElementById('refreshMapBtn');
+    const musicMapLog = document.getElementById('musicMapLog');
+    const crossfadeToggle = document.getElementById('crossfadeToggle');
+    const crossfadeSeconds = document.getElementById('crossfadeSeconds');
+    const eqPresetSelect = document.getElementById('eqPresetSelect');
+    const applyArtistPresetBtn = document.getElementById('applyArtistPresetBtn');
+    const lyricsTranslateToggle = document.getElementById('lyricsTranslateToggle');
+    const lyricsBox = document.getElementById('lyricsBox');
+    const sleepMinutesInput = document.getElementById('sleepMinutesInput');
+    const sleepStartBtn = document.getElementById('sleepStartBtn');
+    const sleepCancelBtn = document.getElementById('sleepCancelBtn');
+    const sleepStatus = document.getElementById('sleepStatus');
+    const snapshotSaveBtn = document.getElementById('snapshotSaveBtn');
+    const snapshotLoadBtn = document.getElementById('snapshotLoadBtn');
+    const snapshotDeleteBtn = document.getElementById('snapshotDeleteBtn');
+    const snapshotSelect = document.getElementById('snapshotSelect');
+
+
     let musicData = null;
     let currentPlaylist = [];
     let currentIndex = 0;
@@ -424,6 +581,11 @@
     let isShuffle = false;
     let repeatMode = 0;
     let isCoverStageOpen = false;
+    let currentRoom = '';
+    let sleepTimerRef = null;
+    let sleepTimerEndAt = 0;
+    let audioCtx = null;
+    let eqNodes = null;
 
     const ICONS = {
       play: `<svg class="icon icon--solid" viewBox="0 0 24 24"><path d="M9 6.75c0-.8.87-1.29 1.55-.88l7.5 4.5a1.03 1.03 0 0 1 0 1.76l-7.5 4.5A1.03 1.03 0 0 1 9 15.75z"/></svg>`,
@@ -458,6 +620,146 @@
       setButtonIcon(repeatBtn, repeatMode === 1 ? 'repeatOne' : 'repeat');
       setButtonIcon(toggleVideoBtn, forceAudioOnly ? 'audio' : 'video');
       setButtonIcon(fullscreenBtn, 'fullscreen');
+    }
+
+
+    function getCurrentTrack() {
+      return currentPlaylist[currentIndex] || null;
+    }
+
+    function getTrackBpm(track) {
+      if (!track) return 120;
+      return track.bpm || (90 + ((track.titulo || '').length * 7 % 70));
+    }
+
+    function getCrossfadeDuration(trackA, trackB) {
+      const base = Number(crossfadeSeconds.value || 5);
+      if (!crossfadeToggle.checked || !trackA || !trackB) return 0;
+      const diff = Math.abs(getTrackBpm(trackA) - getTrackBpm(trackB));
+      const adapt = Math.max(2, Math.min(10, base - Math.floor(diff / 20) + 1));
+      return adapt;
+    }
+
+    function renderMusicMap() {
+      const t = getCurrentTrack();
+      const places = ['São Paulo', 'Recife', 'Seul', 'Tóquio', 'Lisboa', 'CDMX'];
+      const seed = Math.floor(Date.now() / 60000) % 1000;
+      musicMapLog.innerHTML = places.map((p, i) => {
+        const listeners = 100 + ((seed + i * 37) % 900);
+        const song = t ? `${t.titulo} · ${t.artista}` : 'Sem faixa ativa';
+        return `<div>${p}: <strong>${song}</strong> (${listeners} ouvintes)</div>`;
+      }).join('');
+    }
+
+    function renderPartyChat() {
+      if (!currentRoom) {
+        partyChatLog.innerHTML = 'Entre em uma sala para começar.';
+        return;
+      }
+      const all = JSON.parse(localStorage.getItem('comusic_party_chat') || '{}');
+      const messages = all[currentRoom] || [];
+      partyChatLog.innerHTML = messages.slice(-20).map(m => `<div><strong>${m.user}</strong>: ${m.text}</div>`).join('') || 'Sem mensagens ainda.';
+      partyChatLog.scrollTop = partyChatLog.scrollHeight;
+    }
+
+    function addPartyMessage(text) {
+      if (!currentRoom || !text.trim()) return;
+      const all = JSON.parse(localStorage.getItem('comusic_party_chat') || '{}');
+      all[currentRoom] = all[currentRoom] || [];
+      all[currentRoom].push({ user: 'Você', text: text.trim(), at: Date.now() });
+      localStorage.setItem('comusic_party_chat', JSON.stringify(all));
+      renderPartyChat();
+    }
+
+    function getLyricsForTrack(track) {
+      if (!track) return [];
+      const base = track.titulo || 'Faixa';
+      return [
+        { t: 0, pt: `${base} começa agora`, en: `${base} starts right now` },
+        { t: 12, pt: `Sinta o ritmo de ${track.artista || 'artista'}`, en: `Feel the groove of ${track.artista || 'artist'}` },
+        { t: 24, pt: `Refrão chegando`, en: `Chorus is coming` },
+        { t: 36, pt: `A energia sobe`, en: `Energy rises` },
+        { t: 50, pt: `Fechando o verso`, en: `Closing the verse` }
+      ];
+    }
+
+    function renderLyrics() {
+      const track = getCurrentTrack();
+      const lines = getLyricsForTrack(track);
+      const currentTime = currentMedia ? Number(currentMedia.currentTime || 0) : 0;
+      lyricsBox.innerHTML = lines.map((line, idx) => {
+        const next = lines[idx + 1]?.t ?? 9999;
+        const active = currentTime >= line.t && currentTime < next;
+        const content = lyricsTranslateToggle.checked ? `${line.pt} — ${line.en}` : line.pt;
+        return `<div class="lyrics-line ${active ? 'active' : ''}">${content}</div>`;
+      }).join('') || 'Sem letra disponível.';
+    }
+
+    function ensureAudioGraph() {
+      if (audioCtx || !window.AudioContext) return;
+      audioCtx = new AudioContext();
+      const srcA = audioCtx.createMediaElementSource(audioEl);
+      const srcB = audioCtx.createMediaElementSource(audioElB);
+      const low = audioCtx.createBiquadFilter();
+      const mid = audioCtx.createBiquadFilter();
+      const high = audioCtx.createBiquadFilter();
+      low.type = 'lowshelf'; low.frequency.value = 220;
+      mid.type = 'peaking'; mid.frequency.value = 1200; mid.Q.value = 1;
+      high.type = 'highshelf'; high.frequency.value = 4200;
+      srcA.connect(low); srcB.connect(low);
+      low.connect(mid); mid.connect(high); high.connect(audioCtx.destination);
+      eqNodes = { low, mid, high };
+    }
+
+    function applyEqPreset(name) {
+      ensureAudioGraph();
+      if (!eqNodes) return;
+      const presets = {
+        flat: [0, 0, 0],
+        pop: [2, 1, 2],
+        bass: [6, -1, 1],
+        vocal: [-1, 3, 2]
+      };
+      const [l, m, h] = presets[name] || presets.flat;
+      eqNodes.low.gain.value = l;
+      eqNodes.mid.gain.value = m;
+      eqNodes.high.gain.value = h;
+    }
+
+    function suggestedPresetForArtist(artist = '') {
+      const a = artist.toLowerCase();
+      if (a.includes('blackpink') || a.includes('nmixx')) return 'bass';
+      if (a.includes('demi') || a.includes('twice')) return 'pop';
+      return 'vocal';
+    }
+
+    function refreshSnapshots() {
+      const snaps = JSON.parse(localStorage.getItem('comusic_snapshots') || '[]');
+      snapshotSelect.innerHTML = snaps.map((s, i) => `<option value="${i}">${new Date(s.at).toLocaleString()} — ${s.name}</option>`).join('') || '<option value="">Sem snapshots</option>';
+    }
+
+    function startSleepTimer(minutes) {
+      clearInterval(sleepTimerRef);
+      const totalMs = minutes * 60 * 1000;
+      sleepTimerEndAt = Date.now() + totalMs;
+      const originalVolume = currentMedia ? currentMedia.volume : 1;
+      sleepTimerRef = setInterval(() => {
+        const rem = sleepTimerEndAt - Date.now();
+        if (rem <= 0) {
+          if (currentMedia) currentMedia.pause();
+          if (currentMedia) currentMedia.volume = originalVolume;
+          clearInterval(sleepTimerRef);
+          sleepTimerRef = null;
+          sleepStatus.textContent = 'Timer finalizado. Reprodução pausada suavemente.';
+          return;
+        }
+        const remMin = Math.ceil(rem / 60000);
+        if (currentMedia) {
+          const fadeWindow = Math.min(5 * 60 * 1000, totalMs);
+          if (rem <= fadeWindow) currentMedia.volume = Math.max(0.05, originalVolume * (rem / fadeWindow));
+        }
+        sleepStatus.textContent = `Timer ativo: ${remMin} min restantes.`;
+      }, 1000);
     }
 
     const fmt = secs => {
@@ -608,11 +910,41 @@
         toggleVideoBtn.style.display = m.video ? 'inline-flex' : 'none';
         toggleVideoBtn.querySelector('span:last-child').textContent = 'Só Áudio';
       } else {
-        audioEl.src = m.audio || m.video || '';
+        const useB = currentMedia === audioEl && !audioEl.paused;
+        const targetAudio = useB ? audioElB : audioEl;
+        targetAudio.src = m.audio || m.video || '';
+        targetAudio.volume = 1;
         videoEl.pause(); videoEl.style.display = 'none';
         artistImageEl.src = m.imagemArtista || albumCover || (musicData?.placeholderArtista || '');
         artistImageEl.style.display = 'block';
-        currentMedia = audioEl;
+
+        const prevTrack = currentPlaylist[currentIndex - 1] || null;
+        const fadeSec = getCrossfadeDuration(prevTrack, m);
+        if (useB && fadeSec > 0) {
+          targetAudio.volume = 0.01;
+          targetAudio.play().then(() => {
+            const steps = Math.max(1, fadeSec * 10);
+            let n = 0;
+            const from = audioEl;
+            const to = targetAudio;
+            const iv = setInterval(() => {
+              n++;
+              const k = n / steps;
+              from.volume = Math.max(0, 1 - k);
+              to.volume = Math.min(1, k);
+              if (n >= steps) {
+                clearInterval(iv);
+                from.pause();
+                from.volume = 1;
+                currentMedia = to;
+                refreshIcons();
+              }
+            }, 100);
+          }).catch(() => {});
+        } else {
+          currentMedia = targetAudio;
+        }
+
         toggleVideoBtn.style.display = m.video ? 'inline-flex' : 'none';
         toggleVideoBtn.querySelector('span:last-child').textContent = 'Ver Clipe';
       }
@@ -680,11 +1012,80 @@
       seekBar.value = currentMedia.currentTime;
       currentTimeEl.textContent = fmt(currentMedia.currentTime);
       durationEl.textContent = fmt(currentMedia.duration);
+      renderLyrics();
     }, 500);
 
     seekBar.oninput = () => { if (currentMedia) currentMedia.currentTime = seekBar.value; };
 
+
+    partyJoinBtn.onclick = () => {
+      currentRoom = partyRoomInput.value.trim();
+      renderPartyChat();
+    };
+    partySendBtn.onclick = () => {
+      addPartyMessage(partyMessageInput.value);
+      partyMessageInput.value = '';
+    };
+    refreshMapBtn.onclick = renderMusicMap;
+    lyricsTranslateToggle.onchange = renderLyrics;
+    eqPresetSelect.onchange = () => applyEqPreset(eqPresetSelect.value);
+    applyArtistPresetBtn.onclick = () => {
+      const t = getCurrentTrack();
+      const preset = suggestedPresetForArtist(t?.artista || '');
+      eqPresetSelect.value = preset;
+      applyEqPreset(preset);
+    };
+    sleepStartBtn.onclick = () => startSleepTimer(Number(sleepMinutesInput.value || 20));
+    sleepCancelBtn.onclick = () => {
+      clearInterval(sleepTimerRef);
+      sleepTimerRef = null;
+      if (currentMedia) currentMedia.volume = 1;
+      sleepStatus.textContent = 'Timer cancelado.';
+    };
+    snapshotSaveBtn.onclick = () => {
+      if (!currentPlaylist.length) return;
+      const snaps = JSON.parse(localStorage.getItem('comusic_snapshots') || '[]');
+      snaps.unshift({
+        at: Date.now(),
+        name: sectionTitleEl.textContent || 'Playlist',
+        index: currentIndex,
+        playlist: JSON.parse(JSON.stringify(currentPlaylist))
+      });
+      localStorage.setItem('comusic_snapshots', JSON.stringify(snaps.slice(0, 30)));
+      refreshSnapshots();
+    };
+    snapshotLoadBtn.onclick = () => {
+      const snaps = JSON.parse(localStorage.getItem('comusic_snapshots') || '[]');
+      const idx = Number(snapshotSelect.value);
+      if (!Number.isFinite(idx) || !snaps[idx]) return;
+      currentPlaylist = snaps[idx].playlist;
+      currentIndex = Math.min(snaps[idx].index || 0, currentPlaylist.length - 1);
+      tracklistEl.innerHTML = '';
+      currentPlaylist.forEach((faixa, i) => {
+        const tr = document.createElement('div');
+        tr.className = 'track';
+        tr.innerHTML = `<div class="track-number">${i+1}</div><div class="track-meta"><div class="track-title">${faixa.titulo}</div><div class="track-artist">${faixa.artista}</div></div><button aria-label="Reproduzir faixa"><span class="icon-slot" aria-hidden="true"></span></button>`;
+        tr.onclick = () => { currentIndex = i; playCurrent(true); };
+        tracklistEl.appendChild(tr);
+      });
+      tracklistEl.style.display = 'block';
+      gridEl.innerHTML = '';
+      sectionTitleEl.textContent = `Snapshot: ${snaps[idx].name}`;
+      playCurrent(true);
+    };
+    snapshotDeleteBtn.onclick = () => {
+      const snaps = JSON.parse(localStorage.getItem('comusic_snapshots') || '[]');
+      const idx = Number(snapshotSelect.value);
+      if (!Number.isFinite(idx) || !snaps[idx]) return;
+      snaps.splice(idx, 1);
+      localStorage.setItem('comusic_snapshots', JSON.stringify(snaps));
+      refreshSnapshots();
+    };
+
     updateCoverStageInfo();
+    renderMusicMap();
+    renderLyrics();
+    refreshSnapshots();
     refreshIcons();
   </script>
 </body>
