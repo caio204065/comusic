@@ -202,25 +202,44 @@
 
   <main class="layout">
     <section class="card">
-      <h2>1) Configuração da API de Upload (Cloudflare)</h2>
+      <h2>1) Configuração de Upload (Cloudflare)</h2>
       <p class="hint">
-        Para segurança, o upload deve passar por backend/Worker (não exponha segredo do Cloudflare no front).<br>
-        Este HTML espera os endpoints abaixo no seu backend:
-        <code>POST /sign-upload</code> e opcionalmente <code>POST /upload-direct</code>.
+        Agora este painel suporta dois modos:<br>
+        <strong>Assinado (recomendado)</strong> via backend <code>/sign-upload</code> ou
+        <strong>Direto</strong> com Account ID + Token no navegador.
       </p>
 
       <div class="grid">
+        <div>
+          <label for="uploadMode">Modo de upload</label>
+          <select id="uploadMode">
+            <option value="direct">Direto (Account ID + Token)</option>
+            <option value="signed">Assinado (backend /sign-upload)</option>
+          </select>
+        </div>
+        <div>
+          <label for="cdnPrefix">Prefixo público CDN</label>
+          <input id="cdnPrefix" placeholder="https://pub-xxxx.r2.dev" />
+        </div>
+        <div>
+          <label for="cfAccountId">Cloudflare Account ID</label>
+          <input id="cfAccountId" placeholder="ex.: 3f3d..." />
+        </div>
+        <div>
+          <label for="cfApiToken">Cloudflare API Token</label>
+          <input id="cfApiToken" placeholder="token com permissão de escrita no bucket" />
+        </div>
+        <div>
+          <label for="cfBucket">Bucket R2</label>
+          <input id="cfBucket" placeholder="nome-do-bucket" />
+        </div>
         <div class="full">
-          <label for="apiBase">Base URL da API</label>
+          <label for="apiBase">Base URL da API (somente modo assinado)</label>
           <input id="apiBase" placeholder="https://seu-worker.exemplo.workers.dev/api" />
         </div>
-        <div>
-          <label for="authToken">Bearer token (opcional)</label>
+        <div class="full">
+          <label for="authToken">Bearer token para backend (opcional)</label>
           <input id="authToken" placeholder="token opcional" />
-        </div>
-        <div>
-          <label for="cdnPrefix">Prefixo público CDN (opcional)</label>
-          <input id="cdnPrefix" placeholder="https://pub-xxxx.r2.dev" />
         </div>
       </div>
 
@@ -309,9 +328,13 @@
     };
 
     const el = {
+      uploadMode: document.getElementById('uploadMode'),
       apiBase: document.getElementById('apiBase'),
       authToken: document.getElementById('authToken'),
       cdnPrefix: document.getElementById('cdnPrefix'),
+      cfAccountId: document.getElementById('cfAccountId'),
+      cfApiToken: document.getElementById('cfApiToken'),
+      cfBucket: document.getElementById('cfBucket'),
       saveConfigBtn: document.getElementById('saveConfigBtn'),
       configStatus: document.getElementById('configStatus'),
 
@@ -351,9 +374,13 @@
 
     function persistConfig() {
       localStorage.setItem('comusicUploadConfig', JSON.stringify({
+        uploadMode: el.uploadMode.value,
         apiBase: el.apiBase.value.trim(),
         authToken: el.authToken.value.trim(),
-        cdnPrefix: el.cdnPrefix.value.trim()
+        cdnPrefix: el.cdnPrefix.value.trim(),
+        cfAccountId: el.cfAccountId.value.trim(),
+        cfApiToken: el.cfApiToken.value.trim(),
+        cfBucket: el.cfBucket.value.trim()
       }));
       setStatus(el.configStatus, 'Configuração salva no navegador.', 'ok');
     }
@@ -363,13 +390,30 @@
       if (!raw) return;
       try {
         const cfg = JSON.parse(raw);
+        el.uploadMode.value = cfg.uploadMode || 'direct';
         el.apiBase.value = cfg.apiBase || '';
         el.authToken.value = cfg.authToken || '';
         el.cdnPrefix.value = cfg.cdnPrefix || '';
+        el.cfAccountId.value = cfg.cfAccountId || '3f3d9fcf69cf8db418e97acb119b980a';
+        el.cfApiToken.value = cfg.cfApiToken || '-Fj-NJDsUSeQ_1JuRMeaxU52chrpYmkZeoLpDFsM';
+        el.cfBucket.value = cfg.cfBucket || '';
         setStatus(el.configStatus, 'Configuração carregada do navegador.', 'ok');
       } catch {
         setStatus(el.configStatus, 'Falha ao carregar config local.', 'warn');
       }
+    }
+
+
+    function getUploadConfig() {
+      return {
+        mode: el.uploadMode.value,
+        apiBase: el.apiBase.value.trim(),
+        authToken: el.authToken.value.trim(),
+        cdnPrefix: el.cdnPrefix.value.trim(),
+        accountId: el.cfAccountId.value.trim(),
+        apiToken: el.cfApiToken.value.trim(),
+        bucket: el.cfBucket.value.trim()
+      };
     }
 
     async function loadExistingMusicData() {
@@ -517,7 +561,39 @@
       };
     }
 
+    async function uploadDirectToCloudflare(kind, file, item) {
+      const cfg = getUploadConfig();
+      if (!cfg.accountId || !cfg.apiToken || !cfg.bucket) {
+        throw new Error('No modo direto, informe Account ID, API Token e Bucket R2.');
+      }
+      const path = cloudPath(kind, file, item);
+      const encodedPath = path.split('/').map(encodeURIComponent).join('/');
+      const endpoint = `https://api.cloudflare.com/client/v4/accounts/${cfg.accountId}/r2/buckets/${cfg.bucket}/objects/${encodedPath}`;
+
+      const put = await fetch(endpoint, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${cfg.apiToken}`,
+          'Content-Type': file.type || 'application/octet-stream'
+        },
+        body: file
+      });
+
+      if (!put.ok) {
+        const t = await put.text().catch(() => '');
+        throw new Error(`Upload direto falhou (${put.status}) ${t.slice(0, 160)}`);
+      }
+
+      if (!cfg.cdnPrefix) {
+        throw new Error('Upload feito, mas falta Prefixo público CDN para montar URL do arquivo.');
+      }
+      return `${cfg.cdnPrefix.replace(/\/$/, '')}/${path}`;
+    }
+
     async function uploadFileToCloudflare(kind, file, item) {
+      const cfg = getUploadConfig();
+      if (cfg.mode === 'direct') return uploadDirectToCloudflare(kind, file, item);
+
       const signed = await getSignedUpload(kind, file, item);
       if (!signed.uploadUrl) throw new Error('API não retornou uploadUrl.');
 
@@ -604,6 +680,11 @@
     el.refreshPreviewBtn.onclick = renderPreview;
     el.downloadJsonBtn.onclick = downloadJson;
 
+    if (!localStorage.getItem('comusicUploadConfig')) {
+      el.uploadMode.value = 'direct';
+      el.cfAccountId.value = '3f3d9fcf69cf8db418e97acb119b980a';
+      el.cfApiToken.value = '-Fj-NJDsUSeQ_1JuRMeaxU52chrpYmkZeoLpDFsM';
+    }
     loadConfig();
     renderQueue();
     renderPreview();
