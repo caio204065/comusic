@@ -190,7 +190,10 @@
       backdrop-filter: blur(18px);
       z-index: 60;
     }
-    .cover { width: 50px; height: 50px; border-radius: 6px; object-fit: cover; display: none; }
+    .cover { width: 50px; height: 50px; border-radius: 6px; object-fit: cover; display: none; transition: width .25s ease, height .25s ease, border-radius .25s ease, box-shadow .25s ease; }
+    body.cover-large { padding-bottom: 140px; }
+    body.cover-large footer { grid-template-columns: 96px minmax(150px,1fr) auto minmax(220px, 30vw); }
+    body.cover-large .cover { width: 96px; height: 96px; border-radius: 12px; box-shadow: 0 16px 30px rgba(0,0,0,.45); }
     .now-playing { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .controls {
       display: flex; align-items: center; gap: 10px; justify-self: center;
@@ -247,6 +250,7 @@
     @media (max-width: 760px) {
       footer { grid-template-columns: 40px 1fr auto; grid-auto-rows: auto; grid-row-gap: 8px; }
       .progress { grid-column: 1 / -1; }
+      body.cover-large .cover { width: 72px; height: 72px; }
     }
   </style>
 </head>
@@ -280,6 +284,7 @@
 
     <div class="controls">
       <button id="shuffleBtn" title="Aleatório" aria-label="Aleatório"><span class="icon-slot" aria-hidden="true"></span></button>
+      <button id="coverSizeBtn" title="Expandir capa" aria-label="Expandir capa" aria-pressed="false"><span class="icon-slot" aria-hidden="true"></span></button>
       <button id="prevBtn" title="Anterior" aria-label="Anterior"><span class="icon-slot" aria-hidden="true"></span></button>
       <button id="playBtn" title="Play/Pause" aria-label="Reproduzir/Pausar"><span class="icon-slot" aria-hidden="true"></span></button>
       <button id="nextBtn" title="Próxima" aria-label="Próxima"><span class="icon-slot" aria-hidden="true"></span></button>
@@ -310,6 +315,7 @@
     const nextBtn = document.getElementById('nextBtn');
     const shuffleBtn = document.getElementById('shuffleBtn');
     const repeatBtn = document.getElementById('repeatBtn');
+    const coverSizeBtn = document.getElementById('coverSizeBtn');
     const seekBar = document.getElementById('seekBar');
     const currentTimeEl = document.getElementById('currentTime');
     const durationEl = document.getElementById('duration');
@@ -324,6 +330,41 @@
     let forceAudioOnly = false;
     let isShuffle = false;
     let repeatMode = 0;
+    let isCoverLarge = false;
+
+    const ICONS = {
+      play: `<svg class="icon icon--solid" viewBox="0 0 24 24"><path d="M9 6.75c0-.8.87-1.29 1.55-.88l7.5 4.5a1.03 1.03 0 0 1 0 1.76l-7.5 4.5A1.03 1.03 0 0 1 9 15.75z"/></svg>`,
+      pause: `<svg class="icon icon--solid" viewBox="0 0 24 24"><rect x="8" y="6.5" width="2.8" height="11" rx="1.1"/><rect x="13.2" y="6.5" width="2.8" height="11" rx="1.1"/></svg>`,
+      next: `<svg class="icon icon--solid" viewBox="0 0 24 24"><path d="M7.3 6.7a1 1 0 0 1 1.56-.83l6.66 5.13a1.26 1.26 0 0 1 0 2l-6.66 5.13a1 1 0 0 1-1.56-.83z"/><rect x="16.4" y="6.2" width="2.2" height="11.6" rx="1"/></svg>`,
+      prev: `<svg class="icon icon--solid" viewBox="0 0 24 24"><path d="M16.7 6.7a1 1 0 0 0-1.56-.83L8.48 11a1.26 1.26 0 0 0 0 2l6.66 5.13a1 1 0 0 0 1.56-.83z"/><rect x="5.4" y="6.2" width="2.2" height="11.6" rx="1"/></svg>`,
+      shuffle: `<svg class="icon" viewBox="0 0 24 24"><path d="M3.5 7h2.8c1.8 0 2.9.5 3.9 1.9l1.2 1.7"/><path d="M14.3 14.3l1.9 2.8c1 1.4 2.1 1.9 3.9 1.9h.4"/><path d="M20.5 15.7v3.3h-3.3"/><path d="M3.5 17h2.8c1.8 0 2.9-.5 3.9-1.9l5.9-8.2c1-1.4 2.1-1.9 3.9-1.9h.5"/><path d="M20.5 2.9v3.3h-3.3"/></svg>`,
+      repeat: `<svg class="icon" viewBox="0 0 24 24"><path d="M4 11V8.8C4 7.3 5.3 6 6.8 6h11.4"/><path d="M15.5 3 18.5 6l-3 3"/><path d="M20 13v2.2c0 1.5-1.3 2.8-2.8 2.8H5.8"/><path d="M8.5 21 5.5 18l3-3"/></svg>`,
+      repeatOne: `<svg class="icon" viewBox="0 0 24 24"><path d="M4 11V8.8C4 7.3 5.3 6 6.8 6h11.4"/><path d="M15.5 3 18.5 6l-3 3"/><path d="M20 13v2.2c0 1.5-1.3 2.8-2.8 2.8H5.8"/><path d="M8.5 21 5.5 18l3-3"/><path d="M12 9.2v5.6"/><path d="M10.8 10.4 12 9.2l1.2 1.2"/></svg>`,
+      video: `<svg class="icon" viewBox="0 0 24 24"><rect x="3.5" y="6.8" width="12.8" height="10.4" rx="2"/><path d="M16.3 10.2 20.5 7.8v8.4l-4.2-2.4"/></svg>`,
+      audio: `<svg class="icon" viewBox="0 0 24 24"><path d="M10 18V8.6l8-1.6v7.9"/><circle cx="10" cy="18" r="2"/><circle cx="18" cy="16.5" r="2"/></svg>`,
+      fullscreen: `<svg class="icon" viewBox="0 0 24 24"><path d="M8.2 3.5H3.5v4.7"/><path d="M3.5 3.5 9 9"/><path d="M15.8 3.5h4.7v4.7"/><path d="M20.5 3.5 15 9"/><path d="M8.2 20.5H3.5v-4.7"/><path d="M3.5 20.5 9 15"/><path d="M15.8 20.5h4.7v-4.7"/><path d="M20.5 20.5 15 15"/></svg>`,
+      coverExpand: `<svg class="icon" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M12 8.3v7.4"/><path d="M8.3 12h7.4"/></svg>`,
+      coverShrink: `<svg class="icon" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M8.3 12h7.4"/></svg>`
+    };
+
+    function setButtonIcon(button, iconName) {
+      const slot = button.querySelector('.icon-slot');
+      if (slot && ICONS[iconName]) slot.innerHTML = ICONS[iconName];
+    }
+
+    function refreshIcons() {
+      setButtonIcon(shuffleBtn, 'shuffle');
+      setButtonIcon(coverSizeBtn, isCoverLarge ? 'coverShrink' : 'coverExpand');
+      coverSizeBtn.setAttribute('aria-pressed', isCoverLarge ? 'true' : 'false');
+      coverSizeBtn.title = isCoverLarge ? 'Reduzir capa' : 'Expandir capa';
+      coverSizeBtn.setAttribute('aria-label', isCoverLarge ? 'Reduzir capa' : 'Expandir capa');
+      setButtonIcon(prevBtn, 'prev');
+      setButtonIcon(playBtn, currentMedia && !currentMedia.paused ? 'pause' : 'play');
+      setButtonIcon(nextBtn, 'next');
+      setButtonIcon(repeatBtn, repeatMode === 1 ? 'repeatOne' : 'repeat');
+      setButtonIcon(toggleVideoBtn, forceAudioOnly ? 'audio' : 'video');
+      setButtonIcon(fullscreenBtn, 'fullscreen');
+    }
 
     const ICONS = {
       play: `<svg class="icon icon--solid" viewBox="0 0 24 24"><path d="M9 6.75c0-.8.87-1.29 1.55-.88l7.5 4.5a1.03 1.03 0 0 1 0 1.76l-7.5 4.5A1.03 1.03 0 0 1 9 15.75z"/></svg>`,
@@ -528,6 +569,12 @@
       if (!currentMedia) return;
       if (currentMedia.paused) currentMedia.play();
       else currentMedia.pause();
+      refreshIcons();
+    };
+
+    coverSizeBtn.onclick = () => {
+      isCoverLarge = !isCoverLarge;
+      document.body.classList.toggle('cover-large', isCoverLarge);
       refreshIcons();
     };
 
