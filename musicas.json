@@ -10,13 +10,6 @@
           "audio": "SUA_CDN/audios/faixa1.mp3",
           "video": "https://pub-a009e9ce77ba4588b1c701c9eac520fb.r2.dev/Lively/83e0f118-b35f-4f5b-9e1f-9eed1faa52b3.mp4",
           "imagemArtista": ""
-        },
-        {
-          "titulo": "Faixa 2",
-          "artista": "Artista A",
-          "audio": "SUA_CDN/audios/faixa2.mp3",
-          "video": "",
-          "imagemArtista": ""
         }
       ]
     },
@@ -29,13 +22,6 @@
           "artista": "Loossemble",
           "audio": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/Loossemble%2520%2528%25EB%25A3%25A8%25EC%2585%2588%25EB%25B8%2594%2529%2520-%2520%2527TTYL%2527%2520MV%2520%5BAdFtOCtmq-Q%5D.mp3",
           "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/4c55da9d-cf57-43ea-8b93-45b94adcbc3a.mp4",
-          "imagemArtista": ""
-        },
-        {
-          "titulo": "Faixa 2",
-          "artista": "Artista A",
-          "audio": "SUA_CDN/audios/faixa2.mp3",
-          "video": "",
           "imagemArtista": ""
         }
       ]
@@ -133,16 +119,9 @@
       "faixas": [
         {
           "titulo": "FAMOUS",
-          "artista": "ALLDAY PROJECY",
+          "artista": "ALLDAY PROJECT",
           "audio": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/FAMOUS%20-%20ALLDAY%20PROJECT.mp3",
           "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/FamousMV.MP4",
-          "imagemArtista": ""
-        },
-        {
-          "titulo": "WICKED",
-          "artista": "ALLDAY PROJECT",
-          "audio": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/WICKED%20-%20ALLDAY%20PROJECT.mp3",
-          "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/WickedMV.mp4",
           "imagemArtista": ""
         }
       ]
@@ -157,6 +136,33 @@
           "audio": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/Fast%20-%20DEMI%20LOVATO.mp3",
           "video": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/FastMVDEMILO.mp4",
           "imagemArtista": ""
+        }
+      ]
+    },
+    {
+      "titulo": "Coisas Naturais",
+      "capa": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/CoisasNaturais/ab67616d0000b2737ae4d78852e406eff2f4eef6.jpg",
+      "faixas": [
+        {
+          "titulo": "Coisas Naturais",
+          "artista": "Marina Sena",
+          "audio": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/CoisasNaturais/Marina%20Sena%20-%20Coisas%20Naturais.mp3",
+          "video": "",
+          "imagemArtista": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/CoisasNaturais/ab6761860000166747bac201717335dff6347bb8.jpg"
+        },
+        {
+          "titulo": "Numa Ilha",
+          "artista": "Marina Sena",
+          "audio": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/CoisasNaturais/NumaIlha.mp3",
+          "video": "",
+          "imagemArtista": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/CoisasNaturais/ab6761860000166747bac201717335dff6347bb8.jpg"
+          },
+        {
+          "titulo": "Desmitificar",
+          "artista": "Marina Sena",
+          "audio": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/CoisasNaturais/Desmitificar.mp3",
+          "video": "",
+          "imagemArtista": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/CoisasNaturais/ab6761860000166747bac201717335dff6347bb8.jpg"
         }
       ]
     }
