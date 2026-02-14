@@ -146,16 +146,23 @@
         {
           "titulo": "Coisas Naturais",
           "artista": "Marina Sena",
-          "audio": "",
+          "audio": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/CoisasNaturais/Marina%20Sena%20-%20Coisas%20Naturais.mp3",
           "video": "",
-          "imagemArtista": ""
+          "imagemArtista": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/CoisasNaturais/ab6761860000166747bac201717335dff6347bb8.jpg"
         },
         {
           "titulo": "Numa Ilha",
           "artista": "Marina Sena",
-          "audio": "",
+          "audio": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/CoisasNaturais/NumaIlha.mp3",
           "video": "",
-          "imagemArtista": ""
+          "imagemArtista": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/CoisasNaturais/ab6761860000166747bac201717335dff6347bb8.jpg"
+          },
+        {
+          "titulo": "Desmitificar",
+          "artista": "Marina Sena",
+          "audio": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/CoisasNaturais/Desmitificar.mp3",
+          "video": "",
+          "imagemArtista": "https://pub-4048b47938e243a3a0ebe9231b141ffc.r2.dev/CoisasNaturais/ab6761860000166747bac201717335dff6347bb8.jpg"
         }
       ]
     }
