@@ -552,6 +552,35 @@
       return { audioSrc, videoSrc };
     }
 
+    function stripCountPlayFields(data) {
+      if (!data || typeof data !== 'object') return data;
+
+      const stripTrack = track => {
+        if (!track || typeof track !== 'object') return track;
+        delete track.countplay;
+        delete track.countPlay;
+        delete track.playCount;
+        delete track.plays;
+        return track;
+      };
+
+      const stripCollection = collection => {
+        if (!Array.isArray(collection)) return;
+        collection.forEach(item => {
+          if (!item || typeof item !== 'object') return;
+          delete item.countplay;
+          delete item.countPlay;
+          delete item.playCount;
+          delete item.plays;
+          if (Array.isArray(item.faixas)) item.faixas.forEach(stripTrack);
+        });
+      };
+
+      stripCollection(data.albuns);
+      stripCollection(data.playlists);
+      return data;
+    }
+
     async function loadMusicData() {
       const urls = [
         'musicas.json',
@@ -563,7 +592,7 @@
         try {
           const response = await fetch(url, { cache: 'no-store' });
           if (!response.ok) continue;
-          musicData = await response.json();
+          musicData = stripCountPlayFields(await response.json());
           loadHome();
           return;
         } catch (_) {}
@@ -576,7 +605,7 @@
           request.open('GET', 'musicas.json', false);
           request.send(null);
           if (request.status === 0 || (request.status >= 200 && request.status < 300)) {
-            musicData = JSON.parse(request.responseText);
+            musicData = stripCountPlayFields(JSON.parse(request.responseText));
             loadHome();
             return;
           }
