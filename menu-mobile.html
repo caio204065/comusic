@@ -13,54 +13,75 @@
     })();
   </script>
   <style>
-    :root { --bg:#000; --panel:rgba(28,28,33,.82); --text:#f5f5f7; --muted:#9b9ba4; --accent:#ff2d55; --line:#202027; }
+    :root { --bg:#000; --panel:rgba(34,34,40,.82); --text:#f5f5f7; --muted:#9b9ba4; --accent:#ff2d55; --line:#202027; }
     *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif;padding:env(safe-area-inset-top) 0 calc(168px + env(safe-area-inset-bottom));}
-    .header{padding:12px 20px 10px;position:sticky;top:0;background:linear-gradient(to bottom,rgba(0,0,0,.88),rgba(0,0,0,.7));backdrop-filter:blur(14px);z-index:20}
-    .status{font-size:13px;color:#d8d8de;margin-bottom:6px}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif;padding:env(safe-area-inset-top) 0 calc(96px + env(safe-area-inset-bottom));}
+    .header{padding:10px 20px 10px;position:sticky;top:0;background:linear-gradient(to bottom,rgba(0,0,0,.88),rgba(0,0,0,.7));backdrop-filter:blur(14px);z-index:20}
+    .status{font-size:13px;color:#d8d8de;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+    .status svg{width:12px;height:12px;opacity:.8}
     .title-row{display:flex;justify-content:space-between;align-items:center}
     .title-row h1{font-size:56px;line-height:.95;margin:0;font-weight:800;letter-spacing:-.02em}
-    .avatar{width:44px;height:44px;border-radius:50%;object-fit:cover;border:1px solid #34343d}
+    .avatar{width:42px;height:42px;border-radius:50%;object-fit:cover;border:1px solid #34343d}
     .main{padding:0 16px}
     .section-title{font-size:18px;font-weight:700;margin:18px 6px 10px}
     .hero-scroll,.row-scroll{display:flex;gap:12px;overflow-x:auto;padding:0 6px 4px;scrollbar-width:none}.hero-scroll::-webkit-scrollbar,.row-scroll::-webkit-scrollbar{display:none}
     .hero-card{min-width:300px;background:#1f2a3a;border-radius:18px;overflow:hidden}
     .hero-card img{width:100%;height:220px;object-fit:cover;display:block}
-    .hero-meta{padding:12px 14px;background:#3e4b5f}
-    .hero-meta h3{margin:0;font-size:20px}.hero-meta p{margin:4px 0 0;color:#e8e8ef;font-size:16px;opacity:.88}
-    .album-card{min-width:160px;max-width:160px}
+    .hero-meta{padding:12px 14px;background:#3e4b5f}.hero-meta h3{margin:0;font-size:20px}.hero-meta p{margin:4px 0 0;color:#e8e8ef;font-size:16px;opacity:.88}
+    .album-card{min-width:160px;max-width:160px;cursor:pointer}
     .album-card img{width:100%;height:160px;border-radius:14px;object-fit:cover;display:block}
     .album-card h4{margin:8px 2px 0;font-size:18px;font-weight:500}.album-card p{margin:2px;color:var(--muted);font-size:16px}
+    .empty-message{padding:0 6px;color:var(--muted);font-size:15px}
     .library-list{margin:8px 4px 0;padding:0;list-style:none;border-top:1px solid var(--line)}
     .library-list li{display:flex;justify-content:space-between;align-items:center;padding:14px 6px;border-bottom:1px solid var(--line);font-size:20px}
-    .library-list i{font-style:normal;color:var(--accent);margin-right:10px}
+    .library-label{display:flex;align-items:center;gap:10px}
+    .library-label svg{width:24px;height:24px;stroke:var(--accent);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
     .search-input{width:100%;height:46px;background:#17171e;border:1px solid #252530;border-radius:12px;color:var(--text);padding:0 14px;font-size:17px}
     .search-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
     .cat{height:108px;border-radius:12px;padding:12px;font-size:16px;font-weight:700;display:flex;align-items:flex-end;background-size:cover;background-position:center}
     .results{margin-top:12px}
-    .track{display:flex;align-items:center;gap:10px;padding:10px 6px;border-bottom:1px solid #191921}
+    .track{display:flex;align-items:center;gap:10px;padding:10px 6px;border-bottom:1px solid #191921;cursor:pointer}
     .track img{width:46px;height:46px;border-radius:8px;object-fit:cover}.track h5{margin:0;font-size:17px}.track p{margin:3px 0 0;color:var(--muted);font-size:14px}
     .hidden{display:none!important}
-    .mini-player{position:fixed;left:8px;right:8px;bottom:74px;background:linear-gradient(120deg,rgba(66,57,62,.9),rgba(42,42,51,.9));border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(18px);border-radius:16px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;z-index:40}
+    .mini-player{position:fixed;left:8px;right:8px;bottom:72px;background:linear-gradient(120deg,rgba(66,57,62,.9),rgba(42,42,51,.9));border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(18px);border-radius:16px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;z-index:40;cursor:pointer}
     .mini-left{display:flex;align-items:center;gap:10px;min-width:0}.mini-left img{width:46px;height:46px;border-radius:8px;object-fit:cover}.mini-left b{display:block;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
-    .mini-btns button{background:none;border:0;color:#fff;font-size:24px;padding:0 8px}
+    .mini-btns button{background:none;border:0;color:#fff;padding:0 8px}
+    .mini-btns svg{width:26px;height:26px;fill:currentColor}
     .tabbar{position:fixed;left:0;right:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);background:linear-gradient(120deg,rgba(52,52,58,.88),rgba(39,39,46,.88));border-top:1px solid rgba(255,255,255,.12);backdrop-filter:blur(18px);display:grid;grid-template-columns:repeat(5,1fr);z-index:50}
     .tabbar button{border:0;background:none;color:#a7a7af;padding:8px 4px 10px;font-size:12px;display:flex;flex-direction:column;align-items:center;gap:2px}
-    .tabbar button span{font-size:23px;line-height:1}.tabbar button.active{color:var(--accent);font-weight:700}
+    .tabbar svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    .tabbar button.active{color:var(--accent);font-weight:700}
+
+    .now-playing-modal{position:fixed;inset:0;background:radial-gradient(circle at top, rgba(128,105,103,.65), rgba(41,36,41,.95));z-index:80;padding:env(safe-area-inset-top) 22px calc(env(safe-area-inset-bottom) + 22px);display:flex;flex-direction:column}
+    .np-grabber{width:52px;height:6px;border-radius:999px;background:rgba(255,255,255,.35);margin:10px auto 18px}
+    .np-cover{width:min(86vw,420px);aspect-ratio:1;border-radius:18px;object-fit:cover;align-self:center;box-shadow:0 22px 48px rgba(0,0,0,.35)}
+    .np-meta{margin-top:24px;display:flex;justify-content:space-between;align-items:center}
+    .np-meta h2{margin:0;font-size:48px;line-height:1;font-weight:700}.np-meta p{margin:6px 0 0;font-size:24px;color:#e4e4ea}
+    .np-more{width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.2);color:#fff}
+    .np-progress{margin-top:22px}
+    .np-progress input{width:100%;accent-color:#fff}
+    .np-time{display:flex;justify-content:space-between;color:rgba(255,255,255,.72);font-size:13px;margin-top:4px}
+    .np-controls{display:flex;justify-content:space-between;align-items:center;margin-top:20px;padding:0 24px}
+    .np-controls button{border:0;background:none;color:#fff}
+    .np-controls svg{width:54px;height:54px;fill:currentColor}
+    .np-controls .play svg{width:70px;height:70px}
+    .np-bottom{margin-top:auto;display:flex;justify-content:space-around;color:rgba(255,255,255,.78);padding-bottom:10px}
+    .np-bottom svg{width:30px;height:30px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
   </style>
 </head>
 <body>
   <header class="header">
-    <div class="status">◁ Busca</div>
-    <div class="title-row"><h1 id="screenTitle">Ouvir Agora</h1><img class="avatar" src="https://i.imgur.com/L5M6f27.png" alt="Perfil"/></div>
+    <div class="status"><svg viewBox="0 0 24 24"><path d="M15 5 8 12l7 7" stroke="currentColor" fill="none" stroke-width="2"/></svg><span>Busca</span></div>
+    <div class="title-row"><h1 id="screenTitle">Ouvir Agora</h1><img class="avatar" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=120&auto=format&fit=crop" alt="Perfil"/></div>
   </header>
 
   <main class="main">
     <section id="tab-now">
       <h2 class="section-title">Mais relevantes pra você</h2>
       <div id="heroList" class="hero-scroll"></div>
-      <h2 class="section-title">Reproduções recentes</h2>
-      <div id="recentList" class="row-scroll"></div>
+      <h2 id="recentTitle" class="section-title hidden">Reproduções recentes</h2>
+      <div id="recentList" class="row-scroll hidden"></div>
+      <p id="recentEmpty" class="empty-message">Ainda não há reproduções recentes.</p>
     </section>
 
     <section id="tab-explore" class="hidden">
@@ -80,10 +101,10 @@
 
     <section id="tab-library" class="hidden">
       <ul class="library-list">
-        <li><span><i>♫</i>Playlists</span>›</li>
-        <li><span><i>🎤</i>Artistas</span>›</li>
-        <li><span><i>◻</i>Álbuns</span>›</li>
-        <li><span><i>♪</i>Músicas</span>›</li>
+        <li><span class="library-label"><svg viewBox="0 0 24 24"><path d="M5 5v14"/><path d="M10 9v10"/><path d="M15 4v15"/><path d="M20 7v11"/></svg>Playlists</span>›</li>
+        <li><span class="library-label"><svg viewBox="0 0 24 24"><path d="M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/><path d="M12 2v2"/><path d="M12 20v2"/></svg>Artistas</span>›</li>
+        <li><span class="library-label"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 9h8"/></svg>Álbuns</span>›</li>
+        <li><span class="library-label"><svg viewBox="0 0 24 24"><path d="M10 17a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M13 11V5l6-1v8"/></svg>Músicas</span>›</li>
       </ul>
       <h2 class="section-title">Adições Recentes</h2>
       <div id="libraryRecent" class="row-scroll"></div>
@@ -95,44 +116,131 @@
     </section>
   </main>
 
-  <div class="mini-player" id="miniPlayer">
+  <div class="mini-player hidden" id="miniPlayer">
     <div class="mini-left"><img id="miniCover" src="" alt="Capa"/><div><b id="miniTitle">Nenhuma faixa</b><small id="miniArtist" style="color:var(--muted)">Selecione uma música</small></div></div>
-    <div class="mini-btns"><button id="miniPlay">▶</button><button id="miniNext">⏭</button></div>
+    <div class="mini-btns">
+      <button id="miniPlay" aria-label="Reproduzir ou pausar">
+        <svg id="miniPlayIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7Z"/></svg>
+      </button>
+      <button id="miniNext" aria-label="Próxima faixa"><svg viewBox="0 0 24 24"><path d="M6 5v14l10-7z"/><path d="M18 5v14"/></svg></button>
+    </div>
   </div>
 
+  <section id="nowPlayingModal" class="now-playing-modal hidden" aria-hidden="true">
+    <div class="np-grabber" id="closeModalHandle"></div>
+    <img id="npCover" class="np-cover" alt="Capa em reprodução" />
+    <div class="np-meta"><div><h2 id="npTitle">Faixa</h2><p id="npArtist">Artista</p></div><button class="np-more" aria-label="Mais opções">•••</button></div>
+    <div class="np-progress"><input type="range" id="npSeek" min="0" max="100" value="0"/><div class="np-time"><span id="npCurrent">0:00</span><span id="npRemain">-0:00</span></div></div>
+    <div class="np-controls">
+      <button id="npPrev" aria-label="Anterior"><svg viewBox="0 0 24 24"><path d="M11 5 2 12l9 7z"/><path d="M22 5 13 12l9 7z"/></svg></button>
+      <button id="npPlay" class="play" aria-label="Reproduzir ou pausar"><svg id="npPlayIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7Z"/></svg></button>
+      <button id="npNext" aria-label="Próxima"><svg viewBox="0 0 24 24"><path d="M2 5v14l9-7z"/><path d="M13 5v14l9-7z"/></svg></button>
+    </div>
+    <div class="np-bottom">
+      <svg viewBox="0 0 24 24"><path d="M4 15h4l3 3V6l-3 3H4z"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M4 12h16"/><path d="M12 4v16"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M5 6h14"/><path d="M5 12h14"/><path d="M5 18h14"/></svg>
+    </div>
+  </section>
+
   <nav class="tabbar">
-    <button data-tab="now" class="active"><span>▶</span>Ouvir Agora</button>
-    <button data-tab="explore"><span>▦</span>Explorar</button>
-    <button data-tab="radio"><span>◉</span>Rádio</button>
-    <button data-tab="library"><span>♫</span>Biblioteca</button>
-    <button data-tab="search"><span>⌕</span>Buscar</button>
+    <button data-tab="now" class="active"><svg viewBox="0 0 24 24"><path d="M6 19V8"/><path d="M12 19V5"/><path d="M18 19v-9"/></svg>Ouvir Agora</button>
+    <button data-tab="explore"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>Explorar</button>
+    <button data-tab="radio"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M5 12a7 7 0 0 1 14 0"/><path d="M2 12a10 10 0 0 1 20 0"/></svg>Rádio</button>
+    <button data-tab="library"><svg viewBox="0 0 24 24"><path d="M7 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/></svg>Biblioteca</button>
+    <button data-tab="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.2-4.2"/></svg>Buscar</button>
   </nav>
 
   <audio id="audioPlayer"></audio>
 
   <script>
+    const RECENT_KEY = 'comusic_mobile_recent_tracks';
     const screenTitleEl = document.getElementById('screenTitle');
     const audioEl = document.getElementById('audioPlayer');
     const heroListEl = document.getElementById('heroList');
     const recentListEl = document.getElementById('recentList');
+    const recentTitleEl = document.getElementById('recentTitle');
+    const recentEmptyEl = document.getElementById('recentEmpty');
     const libraryRecentEl = document.getElementById('libraryRecent');
     const searchInputEl = document.getElementById('searchInput');
     const searchResultsEl = document.getElementById('searchResults');
+    const miniPlayerEl = document.getElementById('miniPlayer');
     const miniCoverEl = document.getElementById('miniCover');
     const miniTitleEl = document.getElementById('miniTitle');
     const miniArtistEl = document.getElementById('miniArtist');
     const miniPlayEl = document.getElementById('miniPlay');
+    const miniPlayIconEl = document.getElementById('miniPlayIcon');
     const miniNextEl = document.getElementById('miniNext');
+
+    const nowPlayingModalEl = document.getElementById('nowPlayingModal');
+    const closeModalHandleEl = document.getElementById('closeModalHandle');
+    const npCoverEl = document.getElementById('npCover');
+    const npTitleEl = document.getElementById('npTitle');
+    const npArtistEl = document.getElementById('npArtist');
+    const npSeekEl = document.getElementById('npSeek');
+    const npCurrentEl = document.getElementById('npCurrent');
+    const npRemainEl = document.getElementById('npRemain');
+    const npPrevEl = document.getElementById('npPrev');
+    const npPlayEl = document.getElementById('npPlay');
+    const npPlayIconEl = document.getElementById('npPlayIcon');
+    const npNextEl = document.getElementById('npNext');
+
+    const PLAY_ICON = '<path d="M8 5v14l11-7Z"/>';
+    const PAUSE_ICON = '<path d="M8 5h3v14H8zM13 5h3v14h-3z"/>';
 
     let musicData = null;
     let currentPlaylist = [];
     let currentIndex = 0;
+    let currentAlbum = null;
+    let recentPlays = [];
+
+    const fmt = (secs) => {
+      if (!isFinite(secs)) return '0:00';
+      const m = Math.floor(secs / 60);
+      const s = Math.floor(secs % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
+    };
 
     function isUsableMediaUrl(value) {
       if (typeof value !== 'string') return false;
       const v = value.trim();
-      if (!v || v.includes('SUA_CDN/')) return false;
-      return true;
+      return !!v && !v.includes('SUA_CDN/');
+    }
+
+    function getTrackId(albumIndex, trackIndex) {
+      return `${albumIndex}:${trackIndex}`;
+    }
+
+    function saveRecentPlays() {
+      localStorage.setItem(RECENT_KEY, JSON.stringify(recentPlays.slice(0, 20)));
+    }
+
+    function loadRecentPlays() {
+      try {
+        recentPlays = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+        if (!Array.isArray(recentPlays)) recentPlays = [];
+      } catch (_) {
+        recentPlays = [];
+      }
+    }
+
+    function registerRecentPlay(ref) {
+      recentPlays = recentPlays.filter(item => item.id !== ref.id);
+      recentPlays.unshift({ ...ref, ts: Date.now() });
+      saveRecentPlays();
+      renderRecentSection();
+    }
+
+    function trackRefFrom(album, albumIndex, faixa, trackIndex) {
+      return {
+        id: getTrackId(albumIndex, trackIndex),
+        albumIndex,
+        trackIndex,
+        albumTitle: album.titulo,
+        albumCover: album.capa,
+        title: faixa.titulo,
+        artist: faixa.artista
+      };
     }
 
     async function loadMusicData() {
@@ -142,89 +250,135 @@
           const res = await fetch(url, { cache: 'no-store' });
           if (!res.ok) continue;
           musicData = await res.json();
+          loadRecentPlays();
           renderHome();
+          renderRecentSection();
           return;
         } catch (_) {}
       }
       screenTitleEl.textContent = 'Erro ao carregar catálogo';
     }
 
-    function albumCard(album) {
+    function albumCard(album, albumIndex) {
       const el = document.createElement('div');
       el.className = 'album-card';
       el.innerHTML = `<img src="${album.capa}" alt="${album.titulo}"><h4>${album.titulo}</h4><p>${album.faixas?.[0]?.artista || 'Artista'}</p>`;
-      el.onclick = () => {
-        currentPlaylist = album.faixas || [];
-        currentIndex = 0;
-        playCurrent();
-      };
+      el.onclick = () => playTrack(album, albumIndex, 0);
       return el;
     }
 
     function renderHome() {
       const albums = musicData?.albuns || [];
       heroListEl.innerHTML = '';
-      recentListEl.innerHTML = '';
       libraryRecentEl.innerHTML = '';
 
-      albums.slice(0, 4).forEach(album => {
+      albums.slice(0, 4).forEach((album, index) => {
         const hero = document.createElement('div');
         hero.className = 'hero-card';
         hero.innerHTML = `<img src="${album.capa}" alt="${album.titulo}"><div class="hero-meta"><h3>${album.titulo}</h3><p>${album.faixas?.[0]?.artista || ''}</p></div>`;
-        hero.onclick = () => { currentPlaylist = album.faixas || []; currentIndex = 0; playCurrent(); };
+        hero.onclick = () => playTrack(album, index, 0);
         heroListEl.appendChild(hero);
       });
 
-      albums.forEach(album => {
-        const c1 = albumCard(album);
-        const c2 = albumCard(album);
-        recentListEl.appendChild(c1);
-        libraryRecentEl.appendChild(c2);
+      albums.forEach((album, index) => libraryRecentEl.appendChild(albumCard(album, index)));
+    }
+
+    function renderRecentSection() {
+      recentListEl.innerHTML = '';
+      if (!musicData || !recentPlays.length) {
+        recentTitleEl.classList.add('hidden');
+        recentListEl.classList.add('hidden');
+        recentEmptyEl.classList.remove('hidden');
+        return;
+      }
+
+      recentTitleEl.classList.remove('hidden');
+      recentListEl.classList.remove('hidden');
+      recentEmptyEl.classList.add('hidden');
+
+      recentPlays.forEach((entry) => {
+        const album = musicData.albuns?.[entry.albumIndex];
+        const faixa = album?.faixas?.[entry.trackIndex];
+        if (!album || !faixa) return;
+        const card = document.createElement('div');
+        card.className = 'album-card';
+        card.innerHTML = `<img src="${album.capa}" alt="${album.titulo}"><h4>${faixa.titulo}</h4><p>${faixa.artista}</p>`;
+        card.onclick = () => playTrack(album, entry.albumIndex, entry.trackIndex);
+        recentListEl.appendChild(card);
       });
     }
 
-    function playCurrent() {
-      if (!currentPlaylist.length) return;
-      const track = currentPlaylist[currentIndex];
+    function updatePlayerUi(track) {
+      miniCoverEl.src = currentAlbum?.capa || '';
+      miniTitleEl.textContent = track?.titulo || 'Faixa';
+      miniArtistEl.textContent = track?.artista || 'Artista';
+      npCoverEl.src = currentAlbum?.capa || '';
+      npTitleEl.textContent = track?.titulo || 'Faixa';
+      npArtistEl.textContent = track?.artista || 'Artista';
+    }
+
+    function refreshPlayIcons() {
+      const isPlaying = !!audioEl.src && !audioEl.paused;
+      miniPlayIconEl.innerHTML = isPlaying ? PAUSE_ICON : PLAY_ICON;
+      npPlayIconEl.innerHTML = isPlaying ? PAUSE_ICON : PLAY_ICON;
+    }
+
+    function playTrack(album, albumIndex, trackIndex) {
+      const track = album?.faixas?.[trackIndex];
+      if (!track) return;
+
+      currentPlaylist = album.faixas || [];
+      currentAlbum = album;
+      currentIndex = trackIndex;
+
       const audioSrc = isUsableMediaUrl(track.audio) ? track.audio.trim() : '';
       const videoSrc = isUsableMediaUrl(track.video) ? track.video.trim() : '';
       const src = audioSrc || videoSrc;
+
       if (!src) {
-        miniTitleEl.textContent = `${track.titulo} (sem mídia)`;
-        miniArtistEl.textContent = track.artista || 'Artista desconhecido';
-        miniPlayEl.textContent = '▶';
+        updatePlayerUi(track);
+        miniPlayerEl.classList.add('hidden');
+        nowPlayingModalEl.classList.add('hidden');
         return;
       }
+
       audioEl.src = src;
       audioEl.play().catch(() => {});
-      miniCoverEl.src = (musicData.albuns.find(a => a.faixas === currentPlaylist)?.capa) || '';
-      miniTitleEl.textContent = track.titulo || 'Faixa';
-      miniArtistEl.textContent = track.artista || 'Artista';
-      miniPlayEl.textContent = '⏸';
+      updatePlayerUi(track);
+      registerRecentPlay(trackRefFrom(album, albumIndex, track, trackIndex));
+      miniPlayerEl.classList.remove('hidden');
+      refreshPlayIcons();
     }
 
-    miniPlayEl.onclick = () => {
-      if (!audioEl.src && currentPlaylist.length) return playCurrent();
-      if (audioEl.paused) { audioEl.play().catch(() => {}); miniPlayEl.textContent = '⏸'; }
-      else { audioEl.pause(); miniPlayEl.textContent = '▶'; }
-    };
+    function playCurrent() {
+      const albumIndex = musicData?.albuns?.indexOf(currentAlbum);
+      if (albumIndex < 0) return;
+      playTrack(currentAlbum, albumIndex, currentIndex);
+    }
 
-    miniNextEl.onclick = () => {
-      if (!currentPlaylist.length) return;
+    function nextTrack() {
+      if (!currentPlaylist.length || !currentAlbum) return;
       currentIndex = (currentIndex + 1) % currentPlaylist.length;
       playCurrent();
-    };
+    }
 
-    audioEl.onended = () => {
-      if (!currentPlaylist.length) return;
-      currentIndex = (currentIndex + 1) % currentPlaylist.length;
+    function prevTrack() {
+      if (!currentPlaylist.length || !currentAlbum) return;
+      currentIndex = (currentIndex - 1 + currentPlaylist.length) % currentPlaylist.length;
       playCurrent();
-    };
+    }
+
+    function togglePlay() {
+      if (!audioEl.src) return;
+      if (audioEl.paused) audioEl.play().catch(() => {});
+      else audioEl.pause();
+      refreshPlayIcons();
+    }
 
     function allTracks() {
       const out = [];
-      (musicData?.albuns || []).forEach(album => {
-        (album.faixas || []).forEach((faixa, idx) => out.push({ album, faixa, idx }));
+      (musicData?.albuns || []).forEach((album, albumIndex) => {
+        (album.faixas || []).forEach((faixa, trackIndex) => out.push({ album, faixa, albumIndex, trackIndex }));
       });
       return out;
     }
@@ -238,11 +392,11 @@
         searchResultsEl.innerHTML = '<p style="color:var(--muted);padding:4px 6px">Nenhum resultado.</p>';
         return;
       }
-      found.forEach(({ album, faixa, idx }) => {
+      found.forEach(({ album, faixa, albumIndex, trackIndex }) => {
         const el = document.createElement('div');
         el.className = 'track';
         el.innerHTML = `<img src="${album.capa}" alt="${album.titulo}"><div><h5>${faixa.titulo}</h5><p>${faixa.artista} • ${album.titulo}</p></div>`;
-        el.onclick = () => { currentPlaylist = album.faixas || []; currentIndex = idx; playCurrent(); };
+        el.onclick = () => playTrack(album, albumIndex, trackIndex);
         searchResultsEl.appendChild(el);
       });
     }
@@ -255,12 +409,42 @@
         document.querySelectorAll('.tabbar button').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         const tab = btn.dataset.tab;
-        Object.keys(titles).forEach(key => {
-          document.getElementById(`tab-${key}`).classList.toggle('hidden', key !== tab);
-        });
+        Object.keys(titles).forEach(key => document.getElementById(`tab-${key}`).classList.toggle('hidden', key !== tab));
         screenTitleEl.textContent = titles[tab];
       };
     });
+
+    miniPlayEl.addEventListener('click', (e) => { e.stopPropagation(); togglePlay(); });
+    miniNextEl.addEventListener('click', (e) => { e.stopPropagation(); nextTrack(); });
+    miniPlayerEl.addEventListener('click', () => {
+      if (!audioEl.src) return;
+      nowPlayingModalEl.classList.remove('hidden');
+      nowPlayingModalEl.setAttribute('aria-hidden', 'false');
+    });
+
+    closeModalHandleEl.addEventListener('click', () => {
+      nowPlayingModalEl.classList.add('hidden');
+      nowPlayingModalEl.setAttribute('aria-hidden', 'true');
+    });
+
+    npPlayEl.addEventListener('click', togglePlay);
+    npNextEl.addEventListener('click', nextTrack);
+    npPrevEl.addEventListener('click', prevTrack);
+    npSeekEl.addEventListener('input', () => {
+      if (!audioEl.duration) return;
+      audioEl.currentTime = (npSeekEl.value / 100) * audioEl.duration;
+    });
+
+    audioEl.addEventListener('timeupdate', () => {
+      if (!audioEl.duration) return;
+      const progress = (audioEl.currentTime / audioEl.duration) * 100;
+      npSeekEl.value = Number.isFinite(progress) ? progress : 0;
+      npCurrentEl.textContent = fmt(audioEl.currentTime);
+      npRemainEl.textContent = `-${fmt(Math.max(audioEl.duration - audioEl.currentTime, 0))}`;
+    });
+    audioEl.addEventListener('play', refreshPlayIcons);
+    audioEl.addEventListener('pause', refreshPlayIcons);
+    audioEl.addEventListener('ended', nextTrack);
 
     loadMusicData();
   </script>
