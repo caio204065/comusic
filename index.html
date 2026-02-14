@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CoMusic</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="CoMusic" />
+  <meta name="theme-color" content="#000000" />
+  <link rel="manifest" href="manifest.json" />
+  <script>
+    (function () {
+      const forceDesktop = new URLSearchParams(window.location.search).get('view') === 'desktop';
+      const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || window.innerWidth <= 900;
+      const target = !forceDesktop && isMobile ? 'menu-mobile.html' : 'menu.html';
+      window.location.replace(target + window.location.search + window.location.hash);
+    })();
+  </script>
+</head>
+<body></body>
+</html>
