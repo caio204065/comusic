@@ -360,15 +360,41 @@
       return `${m}:${s}`;
     };
 
-    fetch('musicas.json')
-      .then(r => r.json())
-      .then(data => {
-        musicData = data;
-        loadHome();
-      })
-      .catch(() => {
-        sectionTitleEl.textContent = 'Erro ao carregar músicas';
-      });
+    async function loadMusicData() {
+      const urls = [
+        'musicas.json',
+        './musicas.json',
+        new URL('musicas.json', window.location.href).toString()
+      ];
+
+      for (const url of urls) {
+        try {
+          const response = await fetch(url, { cache: 'no-store' });
+          if (!response.ok) continue;
+          musicData = await response.json();
+          loadHome();
+          return;
+        } catch (_) {}
+      }
+
+      // fallback para cenários locais (ex.: file://) onde fetch pode falhar
+      if (window.location.protocol === 'file:') {
+        try {
+          const request = new XMLHttpRequest();
+          request.open('GET', 'musicas.json', false);
+          request.send(null);
+          if (request.status === 0 || (request.status >= 200 && request.status < 300)) {
+            musicData = JSON.parse(request.responseText);
+            loadHome();
+            return;
+          }
+        } catch (_) {}
+      }
+
+      sectionTitleEl.textContent = 'Erro ao carregar músicas (verifique o caminho de musicas.json)';
+    }
+
+    loadMusicData();
 
     function loadHome() {
       sectionTitleEl.textContent = "Álbuns";
