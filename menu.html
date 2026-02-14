@@ -6,23 +6,28 @@
   <title>CoMusic</title>
   <style>
     :root {
-      --bg: #111;
-      --panel: #000;
-      --panel-2: #1a1a1a;
-      --text: #fff;
-      --muted: #aaa;
-      --muted-2: #888;
-      --accent: #1db954;
-      --border: #333;
-      --card: #1c1c1c;
+      --bg: #0a0a0d;
+      --panel: rgba(18, 18, 24, 0.84);
+      --panel-2: #171720;
+      --text: #f5f5f7;
+      --muted: #a1a1aa;
+      --muted-2: #7f7f88;
+      --accent: #fa2d6d;
+      --accent-soft: rgba(250, 45, 109, 0.18);
+      --border: rgba(255, 255, 255, 0.08);
+      --card: rgba(255, 255, 255, 0.03);
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-      background: var(--bg);
+      background:
+        radial-gradient(circle at top right, rgba(245, 61, 122, 0.24), transparent 45%),
+        radial-gradient(circle at top left, rgba(61, 88, 245, 0.2), transparent 34%),
+        var(--bg);
       color: var(--text);
       padding-bottom: 90px;
+      letter-spacing: 0.01em;
     }
     header {
       display: flex;
@@ -33,16 +38,31 @@
       position: sticky;
       top: 0;
       z-index: 50;
-      border-bottom: 1px solid #0a0a0a;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(14px);
     }
-    header h1 { font-size: 18px; margin: 0; font-weight: 600; }
+    header h1 {
+      font-size: 20px;
+      margin: 0;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
     nav a {
       margin-left: 16px;
-      color: #ccc;
+      color: #cbcbd3;
       text-decoration: none;
       font-size: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid transparent;
+      padding: 8px 12px;
+      border-radius: 999px;
+      transition: all .22s ease;
     }
-    nav a:hover { color: #fff; }
+    nav a:hover {
+      color: #fff;
+      border-color: var(--border);
+      background: rgba(255,255,255,0.09);
+    }
 
     .content { max-width: 1200px; margin: 0 auto; }
 
@@ -54,7 +74,9 @@
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      border-radius: 20px; /* moldura arredondada */
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 36px rgba(0,0,0,.5);
     }
     .highlight video,
     .highlight img.artist-image {
@@ -69,13 +91,14 @@
       position: absolute;
       bottom: 14px;
       background: rgba(0,0,0,0.7);
-      border: none;
+      border: 1px solid rgba(255,255,255,0.22);
       color: #fff;
       font-size: 14px;
-      padding: 6px 12px;
+      padding: 7px 13px;
       cursor: pointer;
-      border-radius: 6px;
+      border-radius: 999px;
       z-index: 5;
+      backdrop-filter: blur(8px);
     }
     #fullscreenBtn { right: 14px; font-size: 18px; }
     #toggleVideoBtn { left: 14px; display: none; }
@@ -83,27 +106,33 @@
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 16px;
+      gap: 18px;
       padding: 20px;
     }
     .card {
       background: var(--card);
-      border-radius: 12px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
       overflow: hidden;
       cursor: pointer;
-      transition: transform .2s ease;
+      backdrop-filter: blur(8px);
+      transition: transform .24s ease, box-shadow .24s ease, background .24s ease;
     }
-    .card:hover { transform: scale(1.04); }
+    .card:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 16px 28px rgba(0,0,0,.4);
+      background: rgba(255,255,255,0.06);
+    }
     .card img { width: 100%; height: 180px; object-fit: cover; display: block; }
-    .card h3 { font-size: 14px; margin: 8px 10px 12px; font-weight: 600; }
+    .card h3 { font-size: 14px; margin: 10px 12px 13px; font-weight: 600; }
 
     .section-title {
       padding: 0 20px;
       margin-top: 16px;
       margin-bottom: 8px;
-      font-size: 16px;
-      color: #eaeaea;
-      font-weight: 600;
+      font-size: 17px;
+      color: #f2f2f7;
+      font-weight: 700;
     }
 
     .tracklist { padding: 10px 20px 120px; }
@@ -115,9 +144,12 @@
       padding: 10px 8px;
       border-bottom: 1px solid var(--border);
       cursor: pointer;
+      border-radius: 10px;
+      margin-bottom: 5px;
+      transition: background .2s ease;
     }
     .track:hover { background: var(--panel-2); }
-    .track.active { background: #2a2a2a; }
+    .track.active { background: var(--accent-soft); }
     .track-number { text-align: right; color: var(--muted); }
     .track-meta { display: flex; flex-direction: column; min-width: 0; }
     .track-title { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -130,13 +162,14 @@
 
     footer {
       position: fixed; left: 0; right: 0; bottom: 0;
-      background: var(--panel);
+      background: rgba(18, 18, 24, 0.88);
       padding: 10px 16px;
       display: grid;
       grid-template-columns: 50px minmax(120px,1fr) auto minmax(220px, 30vw);
       gap: 12px;
       align-items: center;
-      border-top: 1px solid #0a0a0a;
+      border-top: 1px solid var(--border);
+      backdrop-filter: blur(18px);
       z-index: 60;
     }
     .cover { width: 50px; height: 50px; border-radius: 6px; object-fit: cover; display: none; }
@@ -145,12 +178,23 @@
       display: flex; align-items: center; gap: 10px; justify-self: center;
     }
     .controls button {
-      background: none; border: none; color: var(--text);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid transparent;
+      color: var(--text);
       font-size: 20px; cursor: pointer; padding: 4px 6px;
+      border-radius: 10px;
+      transition: all .2s ease;
     }
-    .controls button:hover { color: var(--accent); }
+    .controls button:hover {
+      color: var(--accent);
+      border-color: var(--border);
+      background: rgba(255,255,255,0.08);
+    }
     .progress { display: flex; align-items: center; gap: 8px; }
-    .progress input[type="range"] { width: 100%; }
+    .progress input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
     .time { font-size: 12px; color: var(--muted); min-width: 38px; text-align: center; }
 
     @media (max-width: 760px) {
