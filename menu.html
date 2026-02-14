@@ -309,27 +309,28 @@
     }
     .time { font-size: 12px; color: var(--muted); min-width: 38px; text-align: center; }
 
-    .chart-toolbar {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      padding: 0 20px 10px;
-    }
-    .chart-toolbar button,
-    .chart-toolbar select {
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      background: rgba(255,255,255,.05);
+
+    .search-panel { padding: 8px 20px 0; }
+    .search-input {
+      width: 100%;
+      height: 44px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
       color: var(--text);
-      padding: 8px 12px;
-      font-size: 13px;
+      padding: 0 14px;
+      outline: none;
+      font-size: 15px;
     }
-    .chart-playcount {
-      font-size: 12px;
+    .search-input:focus {
+      border-color: rgba(255,45,85,.55);
+      box-shadow: 0 0 0 3px rgba(255,45,85,.2);
+    }
+    .search-meta {
       color: var(--muted);
-      justify-self: end;
-      min-width: 90px;
-      text-align: right;
+      font-size: 12px;
+      margin-top: 8px;
+      padding-left: 4px;
     }
 
     @media (max-width: 760px) {
@@ -356,7 +357,7 @@
       <a href="#" onclick="loadHome();return false;">Início</a>
       <a href="#" onclick="showPlaylists();return false;">Playlists</a>
       <a href="#" onclick="showArtists();return false;">Artistas</a>
-      <a href="#" onclick="showCharts();return false;">Charts</a>
+      <a href="#" onclick="showSearch();return false;">Pesquisa</a>
     </nav>
   </header>
 
@@ -384,77 +385,10 @@
     </section>
     <section class="tracklist" id="tracklist" style="display:none;"></section>
 
-    <section class="feature-panel" id="featurePanel">
-      <h2 class="section-title" style="padding:0;margin:0 0 10px;">Labs CoMusic (Social, Imersão e Pro)</h2>
-      <div class="feature-grid">
-        <article class="feature-card">
-          <h3>Listening Party + Chat</h3>
-          <p>Crie/sincronize uma sala local para ouvir junto.</p>
-          <div class="feature-inline">
-            <input id="partyRoomInput" placeholder="Sala (ex.: kpop-night)" />
-            <button id="partyJoinBtn">Entrar sala</button>
-          </div>
-          <div class="feature-inline">
-            <input id="partyMessageInput" placeholder="Mensagem" />
-            <button id="partySendBtn">Enviar</button>
-          </div>
-          <div id="partyChatLog" class="feature-log"></div>
-        </article>
-
-        <article class="feature-card">
-          <h3>Mapas Musicais (tempo real simulado)</h3>
-          <p>Descoberta por cidade/país com base na faixa atual.</p>
-          <button id="refreshMapBtn">Atualizar mapa</button>
-          <div id="musicMapLog" class="feature-log"></div>
-        </article>
-
-        <article class="feature-card">
-          <h3>Crossfade Inteligente + EQ Presets</h3>
-          <p>Transição suave com duração adaptada ao BPM + presets de artista.</p>
-          <div class="feature-inline">
-            <label style="display:flex;align-items:center;gap:6px;margin:0;"><input id="crossfadeToggle" type="checkbox" style="width:auto;margin:0;"/> Ativar crossfade</label>
-            <input id="crossfadeSeconds" type="number" min="1" max="12" value="5" />
-          </div>
-          <select id="eqPresetSelect">
-            <option value="flat">EQ: Flat</option>
-            <option value="pop">EQ: Pop</option>
-            <option value="bass">EQ: Bass Boost</option>
-            <option value="vocal">EQ: Vocal</option>
-          </select>
-          <button id="applyArtistPresetBtn">Aplicar preset sugerido do artista atual</button>
-        </article>
-
-        <article class="feature-card">
-          <h3>Letras sincronizadas + tradução</h3>
-          <p>Exibe linhas por tempo da música (demo local).</p>
-          <label style="display:flex;align-items:center;gap:6px;margin:0 0 8px;"><input id="lyricsTranslateToggle" type="checkbox" style="width:auto;margin:0;"/> Mostrar tradução</label>
-          <div id="lyricsBox" class="feature-log"></div>
-        </article>
-
-        <article class="feature-card">
-          <h3>Timer de Sono Progressivo</h3>
-          <p>Diminui o volume nos últimos 5 min do timer.</p>
-          <div class="feature-inline">
-            <input id="sleepMinutesInput" type="number" min="1" max="180" value="20" />
-            <button id="sleepStartBtn">Iniciar timer</button>
-          </div>
-          <button id="sleepCancelBtn">Cancelar timer</button>
-          <div id="sleepStatus" class="feature-log">Timer inativo.</div>
-        </article>
-
-        <article class="feature-card">
-          <h3>Snapshot de Playlist</h3>
-          <p>Salve e restaure versões da playlist atual.</p>
-          <div class="feature-inline">
-            <button id="snapshotSaveBtn">Salvar snapshot</button>
-            <button id="snapshotLoadBtn">Carregar selecionado</button>
-          </div>
-          <select id="snapshotSelect"></select>
-          <button id="snapshotDeleteBtn">Excluir snapshot</button>
-        </article>
-      </div>
+    <section class="search-panel" id="searchPanel" style="display:none;">
+      <input id="searchInput" class="search-input" type="search" placeholder="Pesquisar artista, álbum ou música..." aria-label="Pesquisar artista, álbum ou música" />
+      <div id="searchMeta" class="search-meta">Digite para pesquisar no catálogo.</div>
     </section>
-
   </div>
 
   <section id="coverStage" class="cover-stage" aria-hidden="true">
@@ -504,6 +438,9 @@
     const chartToolbarEl = document.getElementById('chartToolbar');
     const regionSelectEl = document.getElementById('regionSelect');
     const sectionTitleEl = document.getElementById('sectionTitle');
+    const searchPanelEl = document.getElementById('searchPanel');
+    const searchInputEl = document.getElementById('searchInput');
+    const searchMetaEl = document.getElementById('searchMeta');
 
     const coverEl = document.getElementById('cover');
     const nowPlayingEl = document.getElementById('nowPlaying');
@@ -637,11 +574,79 @@
 
     loadMusicData();
 
+    function setCatalogView({ showGrid = true, showTracklist = false, showSearch = false } = {}) {
+      gridEl.style.display = showGrid ? '' : 'none';
+      tracklistEl.style.display = showTracklist ? 'block' : 'none';
+      searchPanelEl.style.display = showSearch ? 'block' : 'none';
+    }
+
+    function getAllTracks() {
+      const out = [];
+      musicData.albuns.forEach(album => {
+        album.faixas.forEach((faixa, trackIndex) => {
+          out.push({ album, faixa, trackIndex });
+        });
+      });
+      return out;
+    }
+
+    function runSearch(query) {
+      const q = query.trim().toLowerCase();
+      if (!q) return [];
+      return getAllTracks().filter(({ album, faixa }) => {
+        const haystack = [faixa.titulo, faixa.artista, album.titulo].join(' ').toLowerCase();
+        return haystack.includes(q);
+      });
+    }
+
+    function renderSearchResults(results) {
+      tracklistEl.innerHTML = '';
+      if (!results.length) {
+        searchMetaEl.textContent = searchInputEl.value.trim()
+          ? 'Nenhum resultado encontrado.'
+          : 'Digite para pesquisar no catálogo.';
+        return;
+      }
+
+      searchMetaEl.textContent = `${results.length} resultado(s)`;
+      results.forEach(({ album, faixa, trackIndex }, i) => {
+        const tr = document.createElement('div');
+        tr.className = 'track';
+        tr.innerHTML = `
+          <div class="track-number">${i + 1}</div>
+          <div class="track-meta">
+            <div class="track-title">${faixa.titulo}</div>
+            <div class="track-artist">${faixa.artista} • ${album.titulo}</div>
+          </div>
+          <button aria-label="Reproduzir faixa"><span class="icon-slot" aria-hidden="true"></span></button>`;
+
+        const resultPlaylist = album.faixas;
+        tr.onclick = () => {
+          currentPlaylist = resultPlaylist;
+          albumCover = album.capa;
+          currentIndex = trackIndex;
+          playCurrent(true);
+        };
+
+        const trackButton = tr.querySelector('button');
+        if (trackButton) trackButton.innerHTML = ICONS.play;
+        tracklistEl.appendChild(tr);
+      });
+    }
+
+    function showSearch() {
+      sectionTitleEl.textContent = 'Pesquisa';
+      gridEl.innerHTML = '';
+      setCatalogView({ showGrid: false, showTracklist: true, showSearch: true });
+      searchInputEl.value = '';
+      renderSearchResults([]);
+      searchInputEl.focus();
+    }
+
     function loadHome() {
       sectionTitleEl.textContent = "Álbuns";
       gridEl.innerHTML = "";
-      tracklistEl.style.display = "none";
-      chartToolbarEl.style.display = "none";
+      setCatalogView({ showGrid: true, showTracklist: false, showSearch: false });
       musicData.albuns.forEach(album => {
         const div = document.createElement("div");
         div.className = "card";
@@ -654,9 +659,8 @@
     function showAlbum(album) {
       sectionTitleEl.textContent = album.titulo;
       tracklistEl.innerHTML = "";
-      tracklistEl.style.display = "block";
-      chartToolbarEl.style.display = "none";
       gridEl.innerHTML = "";
+      setCatalogView({ showGrid: true, showTracklist: true, showSearch: false });
       currentPlaylist = album.faixas;
       albumCover = album.capa;
       album.faixas.forEach((faixa, i) => {
@@ -679,8 +683,7 @@
     function showPlaylists() {
       sectionTitleEl.textContent = "Playlists";
       gridEl.innerHTML = "";
-      tracklistEl.style.display = "none";
-      chartToolbarEl.style.display = "none";
+      setCatalogView({ showGrid: true, showTracklist: false, showSearch: false });
       musicData.playlists.forEach(pl => {
         const div = document.createElement("div");
         div.className = "card";
@@ -693,8 +696,7 @@
     function showArtists() {
       sectionTitleEl.textContent = "Artistas";
       gridEl.innerHTML = "";
-      tracklistEl.style.display = "none";
-      chartToolbarEl.style.display = "none";
+      setCatalogView({ showGrid: true, showTracklist: false, showSearch: false });
       let artistas = new Map();
       musicData.albuns.forEach(a => a.faixas.forEach(f => artistas.set(f.artista, f.imagemArtista || a.capa)));
       artistas.forEach((img, nome) => {
@@ -827,6 +829,10 @@
     }, 500);
 
     seekBar.oninput = () => { if (currentMedia) currentMedia.currentTime = seekBar.value; };
+
+    searchInputEl.addEventListener('input', () => {
+      renderSearchResults(runSearch(searchInputEl.value));
+    });
 
     updateCoverStageInfo();
     refreshIcons();
