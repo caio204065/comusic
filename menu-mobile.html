@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>CoMusic Mobile</title>
+  <script>
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      const forceMobile = params.get('view') === 'mobile';
+      const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || window.innerWidth <= 900;
+      if (!forceMobile && !isMobile) window.location.replace('menu.html');
+    })();
+  </script>
+  <style>
+    :root { --bg:#000; --panel:rgba(28,28,33,.82); --text:#f5f5f7; --muted:#9b9ba4; --accent:#ff2d55; --line:#202027; }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif;padding:env(safe-area-inset-top) 0 calc(168px + env(safe-area-inset-bottom));}
+    .header{padding:12px 20px 10px;position:sticky;top:0;background:linear-gradient(to bottom,rgba(0,0,0,.88),rgba(0,0,0,.7));backdrop-filter:blur(14px);z-index:20}
+    .status{font-size:13px;color:#d8d8de;margin-bottom:6px}
+    .title-row{display:flex;justify-content:space-between;align-items:center}
+    .title-row h1{font-size:56px;line-height:.95;margin:0;font-weight:800;letter-spacing:-.02em}
+    .avatar{width:44px;height:44px;border-radius:50%;object-fit:cover;border:1px solid #34343d}
+    .main{padding:0 16px}
+    .section-title{font-size:18px;font-weight:700;margin:18px 6px 10px}
+    .hero-scroll,.row-scroll{display:flex;gap:12px;overflow-x:auto;padding:0 6px 4px;scrollbar-width:none}.hero-scroll::-webkit-scrollbar,.row-scroll::-webkit-scrollbar{display:none}
+    .hero-card{min-width:300px;background:#1f2a3a;border-radius:18px;overflow:hidden}
+    .hero-card img{width:100%;height:220px;object-fit:cover;display:block}
+    .hero-meta{padding:12px 14px;background:#3e4b5f}
+    .hero-meta h3{margin:0;font-size:20px}.hero-meta p{margin:4px 0 0;color:#e8e8ef;font-size:16px;opacity:.88}
+    .album-card{min-width:160px;max-width:160px}
+    .album-card img{width:100%;height:160px;border-radius:14px;object-fit:cover;display:block}
+    .album-card h4{margin:8px 2px 0;font-size:18px;font-weight:500}.album-card p{margin:2px;color:var(--muted);font-size:16px}
+    .library-list{margin:8px 4px 0;padding:0;list-style:none;border-top:1px solid var(--line)}
+    .library-list li{display:flex;justify-content:space-between;align-items:center;padding:14px 6px;border-bottom:1px solid var(--line);font-size:20px}
+    .library-list i{font-style:normal;color:var(--accent);margin-right:10px}
+    .search-input{width:100%;height:46px;background:#17171e;border:1px solid #252530;border-radius:12px;color:var(--text);padding:0 14px;font-size:17px}
+    .search-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+    .cat{height:108px;border-radius:12px;padding:12px;font-size:16px;font-weight:700;display:flex;align-items:flex-end;background-size:cover;background-position:center}
+    .results{margin-top:12px}
+    .track{display:flex;align-items:center;gap:10px;padding:10px 6px;border-bottom:1px solid #191921}
+    .track img{width:46px;height:46px;border-radius:8px;object-fit:cover}.track h5{margin:0;font-size:17px}.track p{margin:3px 0 0;color:var(--muted);font-size:14px}
+    .hidden{display:none!important}
+    .mini-player{position:fixed;left:8px;right:8px;bottom:74px;background:linear-gradient(120deg,rgba(66,57,62,.9),rgba(42,42,51,.9));border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(18px);border-radius:16px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;z-index:40}
+    .mini-left{display:flex;align-items:center;gap:10px;min-width:0}.mini-left img{width:46px;height:46px;border-radius:8px;object-fit:cover}.mini-left b{display:block;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+    .mini-btns button{background:none;border:0;color:#fff;font-size:24px;padding:0 8px}
+    .tabbar{position:fixed;left:0;right:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);background:linear-gradient(120deg,rgba(52,52,58,.88),rgba(39,39,46,.88));border-top:1px solid rgba(255,255,255,.12);backdrop-filter:blur(18px);display:grid;grid-template-columns:repeat(5,1fr);z-index:50}
+    .tabbar button{border:0;background:none;color:#a7a7af;padding:8px 4px 10px;font-size:12px;display:flex;flex-direction:column;align-items:center;gap:2px}
+    .tabbar button span{font-size:23px;line-height:1}.tabbar button.active{color:var(--accent);font-weight:700}
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="status">◁ Busca</div>
+    <div class="title-row"><h1 id="screenTitle">Ouvir Agora</h1><img class="avatar" src="https://i.imgur.com/L5M6f27.png" alt="Perfil"/></div>
+  </header>
+
+  <main class="main">
+    <section id="tab-now">
+      <h2 class="section-title">Mais relevantes pra você</h2>
+      <div id="heroList" class="hero-scroll"></div>
+      <h2 class="section-title">Reproduções recentes</h2>
+      <div id="recentList" class="row-scroll"></div>
+    </section>
+
+    <section id="tab-explore" class="hidden">
+      <h2 class="section-title">Explorar categorias</h2>
+      <div class="search-grid">
+        <div class="cat" style="background-image:linear-gradient(135deg,#ff61b7,#ff9f0a)">Pop</div>
+        <div class="cat" style="background-image:linear-gradient(135deg,#ff375f,#5e5ce6)">K-Pop</div>
+        <div class="cat" style="background-image:linear-gradient(135deg,#ffd60a,#30d158)">Hits Brasil</div>
+        <div class="cat" style="background-image:linear-gradient(135deg,#64d2ff,#bf5af2)">Eletrônica</div>
+      </div>
+    </section>
+
+    <section id="tab-radio" class="hidden">
+      <h2 class="section-title">Rádio</h2>
+      <p style="color:var(--muted);padding:0 6px">Estações em breve. Enquanto isso, use Ouvir Agora e Biblioteca.</p>
+    </section>
+
+    <section id="tab-library" class="hidden">
+      <ul class="library-list">
+        <li><span><i>♫</i>Playlists</span>›</li>
+        <li><span><i>🎤</i>Artistas</span>›</li>
+        <li><span><i>◻</i>Álbuns</span>›</li>
+        <li><span><i>♪</i>Músicas</span>›</li>
+      </ul>
+      <h2 class="section-title">Adições Recentes</h2>
+      <div id="libraryRecent" class="row-scroll"></div>
+    </section>
+
+    <section id="tab-search" class="hidden">
+      <input id="searchInput" class="search-input" placeholder="Artistas, músicas, álbuns" />
+      <div id="searchResults" class="results"></div>
+    </section>
+  </main>
+
+  <div class="mini-player" id="miniPlayer">
+    <div class="mini-left"><img id="miniCover" src="" alt="Capa"/><div><b id="miniTitle">Nenhuma faixa</b><small id="miniArtist" style="color:var(--muted)">Selecione uma música</small></div></div>
+    <div class="mini-btns"><button id="miniPlay">▶</button><button id="miniNext">⏭</button></div>
+  </div>
+
+  <nav class="tabbar">
+    <button data-tab="now" class="active"><span>▶</span>Ouvir Agora</button>
+    <button data-tab="explore"><span>▦</span>Explorar</button>
+    <button data-tab="radio"><span>◉</span>Rádio</button>
+    <button data-tab="library"><span>♫</span>Biblioteca</button>
+    <button data-tab="search"><span>⌕</span>Buscar</button>
+  </nav>
+
+  <audio id="audioPlayer"></audio>
+
+  <script>
+    const screenTitleEl = document.getElementById('screenTitle');
+    const audioEl = document.getElementById('audioPlayer');
+    const heroListEl = document.getElementById('heroList');
+    const recentListEl = document.getElementById('recentList');
+    const libraryRecentEl = document.getElementById('libraryRecent');
+    const searchInputEl = document.getElementById('searchInput');
+    const searchResultsEl = document.getElementById('searchResults');
+    const miniCoverEl = document.getElementById('miniCover');
+    const miniTitleEl = document.getElementById('miniTitle');
+    const miniArtistEl = document.getElementById('miniArtist');
+    const miniPlayEl = document.getElementById('miniPlay');
+    const miniNextEl = document.getElementById('miniNext');
+
+    let musicData = null;
+    let currentPlaylist = [];
+    let currentIndex = 0;
+
+    function isUsableMediaUrl(value) {
+      if (typeof value !== 'string') return false;
+      const v = value.trim();
+      if (!v || v.includes('SUA_CDN/')) return false;
+      return true;
+    }
+
+    async function loadMusicData() {
+      const urls = ['musicas.json', './musicas.json', new URL('musicas.json', window.location.href).toString()];
+      for (const url of urls) {
+        try {
+          const res = await fetch(url, { cache: 'no-store' });
+          if (!res.ok) continue;
+          musicData = await res.json();
+          renderHome();
+          return;
+        } catch (_) {}
+      }
+      screenTitleEl.textContent = 'Erro ao carregar catálogo';
+    }
+
+    function albumCard(album) {
+      const el = document.createElement('div');
+      el.className = 'album-card';
+      el.innerHTML = `<img src="${album.capa}" alt="${album.titulo}"><h4>${album.titulo}</h4><p>${album.faixas?.[0]?.artista || 'Artista'}</p>`;
+      el.onclick = () => {
+        currentPlaylist = album.faixas || [];
+        currentIndex = 0;
+        playCurrent();
+      };
+      return el;
+    }
+
+    function renderHome() {
+      const albums = musicData?.albuns || [];
+      heroListEl.innerHTML = '';
+      recentListEl.innerHTML = '';
+      libraryRecentEl.innerHTML = '';
+
+      albums.slice(0, 4).forEach(album => {
+        const hero = document.createElement('div');
+        hero.className = 'hero-card';
+        hero.innerHTML = `<img src="${album.capa}" alt="${album.titulo}"><div class="hero-meta"><h3>${album.titulo}</h3><p>${album.faixas?.[0]?.artista || ''}</p></div>`;
+        hero.onclick = () => { currentPlaylist = album.faixas || []; currentIndex = 0; playCurrent(); };
+        heroListEl.appendChild(hero);
+      });
+
+      albums.forEach(album => {
+        const c1 = albumCard(album);
+        const c2 = albumCard(album);
+        recentListEl.appendChild(c1);
+        libraryRecentEl.appendChild(c2);
+      });
+    }
+
+    function playCurrent() {
+      if (!currentPlaylist.length) return;
+      const track = currentPlaylist[currentIndex];
+      const audioSrc = isUsableMediaUrl(track.audio) ? track.audio.trim() : '';
+      const videoSrc = isUsableMediaUrl(track.video) ? track.video.trim() : '';
+      const src = audioSrc || videoSrc;
+      if (!src) {
+        miniTitleEl.textContent = `${track.titulo} (sem mídia)`;
+        miniArtistEl.textContent = track.artista || 'Artista desconhecido';
+        miniPlayEl.textContent = '▶';
+        return;
+      }
+      audioEl.src = src;
+      audioEl.play().catch(() => {});
+      miniCoverEl.src = (musicData.albuns.find(a => a.faixas === currentPlaylist)?.capa) || '';
+      miniTitleEl.textContent = track.titulo || 'Faixa';
+      miniArtistEl.textContent = track.artista || 'Artista';
+      miniPlayEl.textContent = '⏸';
+    }
+
+    miniPlayEl.onclick = () => {
+      if (!audioEl.src && currentPlaylist.length) return playCurrent();
+      if (audioEl.paused) { audioEl.play().catch(() => {}); miniPlayEl.textContent = '⏸'; }
+      else { audioEl.pause(); miniPlayEl.textContent = '▶'; }
+    };
+
+    miniNextEl.onclick = () => {
+      if (!currentPlaylist.length) return;
+      currentIndex = (currentIndex + 1) % currentPlaylist.length;
+      playCurrent();
+    };
+
+    audioEl.onended = () => {
+      if (!currentPlaylist.length) return;
+      currentIndex = (currentIndex + 1) % currentPlaylist.length;
+      playCurrent();
+    };
+
+    function allTracks() {
+      const out = [];
+      (musicData?.albuns || []).forEach(album => {
+        (album.faixas || []).forEach((faixa, idx) => out.push({ album, faixa, idx }));
+      });
+      return out;
+    }
+
+    function renderSearch(query) {
+      const q = query.trim().toLowerCase();
+      searchResultsEl.innerHTML = '';
+      if (!q) return;
+      const found = allTracks().filter(({ album, faixa }) => [album.titulo, faixa.titulo, faixa.artista].join(' ').toLowerCase().includes(q));
+      if (!found.length) {
+        searchResultsEl.innerHTML = '<p style="color:var(--muted);padding:4px 6px">Nenhum resultado.</p>';
+        return;
+      }
+      found.forEach(({ album, faixa, idx }) => {
+        const el = document.createElement('div');
+        el.className = 'track';
+        el.innerHTML = `<img src="${album.capa}" alt="${album.titulo}"><div><h5>${faixa.titulo}</h5><p>${faixa.artista} • ${album.titulo}</p></div>`;
+        el.onclick = () => { currentPlaylist = album.faixas || []; currentIndex = idx; playCurrent(); };
+        searchResultsEl.appendChild(el);
+      });
+    }
+
+    searchInputEl.addEventListener('input', () => renderSearch(searchInputEl.value));
+
+    const titles = { now: 'Ouvir Agora', explore: 'Explorar', radio: 'Rádio', library: 'Biblioteca', search: 'Buscar' };
+    document.querySelectorAll('.tabbar button').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('.tabbar button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const tab = btn.dataset.tab;
+        Object.keys(titles).forEach(key => {
+          document.getElementById(`tab-${key}`).classList.toggle('hidden', key !== tab);
+        });
+        screenTitleEl.textContent = titles[tab];
+      };
+    });
+
+    loadMusicData();
+  </script>
+</body>
+</html>
