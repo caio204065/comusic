@@ -217,11 +217,13 @@
   </nav>
 
   <audio id="audioPlayer" preload="metadata" playsinline x-webkit-airplay="allow"></audio>
+  <video id="videoPlayer" preload="metadata" playsinline webkit-playsinline style="display:none"></video>
 
   <script>
     const RECENT_ALBUM_KEY = 'comusic_mobile_recent_albums';
     const screenTitleEl = document.getElementById('screenTitle');
     const audioEl = document.getElementById('audioPlayer');
+    const videoEl = document.getElementById('videoPlayer');
     const heroListEl = document.getElementById('heroList');
     const recentListEl = document.getElementById('recentList');
     const recentTitleEl = document.getElementById('recentTitle');
@@ -273,6 +275,7 @@
     let currentAlbumIndex = -1;
     let recentAlbums = [];
     let lastVolume = 1;
+    let currentMedia = audioEl;
 
     const fmt = (secs) => {
       if (!isFinite(secs)) return '0:00';
@@ -285,6 +288,16 @@
       if (typeof value !== 'string') return false;
       const v = value.trim();
       return !!v && !v.includes('SUA_CDN/');
+    }
+
+    function resolveTrackSources(track) {
+      const audioSrc = isUsableMediaUrl(track?.audio) ? track.audio.trim() : '';
+      const videoSrc = isUsableMediaUrl(track?.video) ? track.video.trim() : '';
+      return { audioSrc, videoSrc };
+    }
+
+    function getActiveMedia() {
+      return currentMedia || audioEl;
     }
 
     function saveRecentAlbums() {
@@ -309,12 +322,13 @@
 
     function updatePositionState() {
       if (!('mediaSession' in navigator) || !navigator.mediaSession.setPositionState) return;
-      if (!audioEl.duration || !isFinite(audioEl.duration)) return;
+      const media = getActiveMedia();
+      if (!media?.duration || !isFinite(media.duration)) return;
       try {
         navigator.mediaSession.setPositionState({
-          duration: audioEl.duration,
-          playbackRate: audioEl.playbackRate || 1,
-          position: Math.min(audioEl.currentTime, audioEl.duration)
+          duration: media.duration,
+          playbackRate: media.playbackRate || 1,
+          position: Math.min(media.currentTime, media.duration)
         });
       } catch (_) {}
     }
@@ -346,13 +360,13 @@
         artwork: getArtworkSources(track)
       });
 
-      navigator.mediaSession.playbackState = audioEl.paused ? 'paused' : 'playing';
-      navigator.mediaSession.setActionHandler('play', () => audioEl.play().catch(() => {}));
-      navigator.mediaSession.setActionHandler('pause', () => audioEl.pause());
+      navigator.mediaSession.playbackState = getActiveMedia().paused ? 'paused' : 'playing';
+      navigator.mediaSession.setActionHandler('play', () => getActiveMedia().play().catch(() => {}));
+      navigator.mediaSession.setActionHandler('pause', () => getActiveMedia().pause());
       navigator.mediaSession.setActionHandler('previoustrack', () => prevTrack());
       navigator.mediaSession.setActionHandler('nexttrack', () => nextTrack());
       navigator.mediaSession.setActionHandler('seekto', (details) => {
-        if (typeof details.seekTime === 'number') audioEl.currentTime = details.seekTime;
+        if (typeof details.seekTime === 'number') getActiveMedia().currentTime = details.seekTime;
       });
       updatePositionState();
     }
@@ -493,7 +507,8 @@
     }
 
     function refreshPlayIcons() {
-      const isPlaying = !!audioEl.src && !audioEl.paused;
+      const media = getActiveMedia();
+      const isPlaying = !!media?.src && !media.paused;
       miniPlayIconEl.innerHTML = isPlaying ? PAUSE_ICON : PLAY_ICON;
       npPlayIconEl.innerHTML = isPlaying ? PAUSE_ICON : PLAY_ICON;
     }
@@ -507,21 +522,32 @@
       currentAlbumIndex = albumIndex;
       currentIndex = trackIndex;
 
-      const audioSrc = isUsableMediaUrl(track.audio) ? track.audio.trim() : '';
-      const videoSrc = isUsableMediaUrl(track.video) ? track.video.trim() : '';
-      const src = audioSrc || videoSrc;
+      const { audioSrc, videoSrc } = resolveTrackSources(track);
 
-      if (!src) {
+      if (!audioSrc && !videoSrc) {
         updatePlayerUi(track);
         miniPlayerEl.classList.add('hidden');
         nowPlayingModalEl.classList.add('hidden');
         return;
       }
 
-      audioEl.src = src;
+      audioEl.pause();
+      videoEl.pause();
+      audioEl.src = '';
+      videoEl.src = '';
+
+      if (audioSrc) {
+        currentMedia = audioEl;
+        audioEl.src = audioSrc;
+      } else {
+        currentMedia = videoEl;
+        videoEl.src = videoSrc;
+      }
+
       updatePlayerUi(track);
+      currentMedia.volume = Number(npVolumeEl.value || 1);
       updateMediaSession(track);
-      audioEl.play().then(() => updateMediaSession(track)).catch(() => {});
+      currentMedia.play().then(() => updateMediaSession(track)).catch(() => {});
       registerRecentAlbum(albumIndex);
       miniPlayerEl.classList.remove('hidden');
       refreshPlayIcons();
@@ -545,9 +571,10 @@
     }
 
     function togglePlay() {
-      if (!audioEl.src) return;
-      if (audioEl.paused) audioEl.play().catch(() => {});
-      else audioEl.pause();
+      const media = getActiveMedia();
+      if (!media?.src) return;
+      if (media.paused) media.play().catch(() => {});
+      else media.pause();
       refreshPlayIcons();
     }
 
@@ -594,7 +621,7 @@
     miniPlayEl.addEventListener('click', (e) => { e.stopPropagation(); togglePlay(); });
     miniNextEl.addEventListener('click', (e) => { e.stopPropagation(); nextTrack(); });
     miniPlayerEl.addEventListener('click', () => {
-      if (!audioEl.src) return;
+      if (!getActiveMedia().src) return;
       nowPlayingModalEl.classList.remove('hidden');
       nowPlayingModalEl.setAttribute('aria-hidden', 'false');
     });
@@ -630,48 +657,92 @@
     });
 
     npSeekEl.addEventListener('input', () => {
-      if (!audioEl.duration) return;
-      audioEl.currentTime = (npSeekEl.value / 100) * audioEl.duration;
+      const media = getActiveMedia();
+      if (!media.duration) return;
+      media.currentTime = (npSeekEl.value / 100) * media.duration;
     });
 
     npVolumeEl.addEventListener('input', () => {
-      audioEl.volume = Number(npVolumeEl.value);
-      if (audioEl.volume > 0) lastVolume = audioEl.volume;
+      const level = Number(npVolumeEl.value);
+      audioEl.volume = level;
+      videoEl.volume = level;
+      if (level > 0) lastVolume = level;
     });
 
     npMuteEl.addEventListener('click', () => {
-      if (audioEl.volume > 0) {
-        lastVolume = audioEl.volume;
+      const media = getActiveMedia();
+      if (media.volume > 0) {
+        lastVolume = media.volume;
         audioEl.volume = 0;
+        videoEl.volume = 0;
         npVolumeEl.value = 0;
       } else {
         audioEl.volume = lastVolume || 1;
-        npVolumeEl.value = audioEl.volume;
+        videoEl.volume = lastVolume || 1;
+        npVolumeEl.value = lastVolume || 1;
       }
     });
 
-    audioEl.addEventListener('timeupdate', () => {
-      if (!audioEl.duration) return;
-      const progress = (audioEl.currentTime / audioEl.duration) * 100;
-      npSeekEl.value = Number.isFinite(progress) ? progress : 0;
-      npCurrentEl.textContent = fmt(audioEl.currentTime);
-      npRemainEl.textContent = `-${fmt(Math.max(audioEl.duration - audioEl.currentTime, 0))}`;
-      updatePositionState();
-    });
-    audioEl.addEventListener('play', () => {
-      refreshPlayIcons();
-      if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
-      const track = currentPlaylist[currentIndex];
-      if (track) updateMediaSession(track);
-    });
-    audioEl.addEventListener('pause', () => {
-      refreshPlayIcons();
-      if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
-    });
-    audioEl.addEventListener('loadedmetadata', updatePositionState);
-    audioEl.addEventListener('ratechange', updatePositionState);
-    audioEl.addEventListener('ended', nextTrack);
+    function bindMediaEvents(media) {
+      media.addEventListener('timeupdate', () => {
+        if (media !== getActiveMedia() || !media.duration) return;
+        const progress = (media.currentTime / media.duration) * 100;
+        npSeekEl.value = Number.isFinite(progress) ? progress : 0;
+        npCurrentEl.textContent = fmt(media.currentTime);
+        npRemainEl.textContent = `-${fmt(Math.max(media.duration - media.currentTime, 0))}`;
+        updatePositionState();
+      });
 
+      media.addEventListener('play', () => {
+        if (media !== getActiveMedia()) return;
+        refreshPlayIcons();
+        if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
+        const track = currentPlaylist[currentIndex];
+        if (track) updateMediaSession(track);
+      });
+
+      media.addEventListener('pause', () => {
+        if (media !== getActiveMedia()) return;
+        refreshPlayIcons();
+        if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
+      });
+
+      media.addEventListener('loadedmetadata', () => {
+        if (media !== getActiveMedia()) return;
+        updatePositionState();
+      });
+
+      media.addEventListener('ratechange', () => {
+        if (media !== getActiveMedia()) return;
+        updatePositionState();
+      });
+
+      media.addEventListener('ended', () => {
+        if (media !== getActiveMedia()) return;
+        nextTrack();
+      });
+
+      media.addEventListener('error', () => {
+        if (media !== getActiveMedia()) return;
+        const track = currentPlaylist[currentIndex];
+        if (!track) return;
+        const { audioSrc, videoSrc } = resolveTrackSources(track);
+        if (media === audioEl && videoSrc) {
+          currentMedia = videoEl;
+          videoEl.src = videoSrc;
+          videoEl.volume = Number(npVolumeEl.value || 1);
+          videoEl.play().catch(() => {});
+        } else if (media === videoEl && audioSrc) {
+          currentMedia = audioEl;
+          audioEl.src = audioSrc;
+          audioEl.volume = Number(npVolumeEl.value || 1);
+          audioEl.play().catch(() => {});
+        }
+      });
+    }
+
+    bindMediaEvents(audioEl);
+    bindMediaEvents(videoEl);
     loadMusicData();
   </script>
 </body>
